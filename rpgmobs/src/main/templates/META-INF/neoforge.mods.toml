@@ -88,6 +88,13 @@ Adds randomly spawning RPG mobs to the world. A tribute to the fantastic RPG Mob
     ordering="NONE"
     side="BOTH"
 
+[[dependencies.mymodid]]
+    modId="smartbrainlib"
+    mandatory=true
+    versionRange="[1.16.11,)"
+    ordering="NONE"
+    side="SERVER"
+
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
 # stop your mod loading on the server for example.
