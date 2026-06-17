@@ -2,6 +2,7 @@ package com.conanthecivilian.rpgmobs.entity.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.service.FactionService;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
@@ -12,23 +13,44 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.tslat.smartbrainlib.api.SmartBrainOwner;
+import net.tslat.smartbrainlib.api.core.BrainActivityGroup;
+import net.tslat.smartbrainlib.api.core.SmartBrainProvider;
+import net.tslat.smartbrainlib.api.core.behaviour.FirstApplicableBehaviour;
+import net.tslat.smartbrainlib.api.core.behaviour.OneRandomBehaviour;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.look.LookAtTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.misc.Idle;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.move.FloatToSurfaceOfFluid;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.move.MoveToWalkTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.path.SetRandomWalkTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.target.SetPlayerLookTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.target.SetRandomLookTarget;
+import net.tslat.smartbrainlib.api.core.sensor.ExtendedSensor;
+import net.tslat.smartbrainlib.api.core.sensor.vanilla.HurtBySensor;
+import net.tslat.smartbrainlib.api.core.sensor.vanilla.NearbyLivingEntitySensor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 
-public abstract class AbstractHumanlikeEntity extends PathfinderMob implements IBipedEntity {
-    public static enum BipedArmPose {
+public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<T>> extends PathfinderMob implements
+    IHumanLike,
+    SmartBrainOwner<T> {
+    protected AbstractHumanlikeEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level);
+    }
+
+    public enum BipedArmPose {
         BOW_AND_ARROW,
         CROSSBOW_HOLD,
         CROSSBOW_CHARGE,
@@ -38,13 +60,6 @@ public abstract class AbstractHumanlikeEntity extends PathfinderMob implements I
     public FactionService factionService = new FactionService();
 
     public HashMap<EquipmentSlot, ItemStack> equipment = new HashMap<>();
-
-    public boolean isCoward = false;
-    public boolean isFleeing = false;
-
-    public AbstractHumanlikeEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
-        super(entityType, level);
-    }
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -72,7 +87,7 @@ public abstract class AbstractHumanlikeEntity extends PathfinderMob implements I
     }
 
     public static boolean checkHumanlikeSpawnRules(
-        EntityType<? extends AbstractHumanlikeEntity> humanlike,
+        EntityType<? extends AbstractHumanlikeEntity<?>> humanlike,
         LevelAccessor level,
         MobSpawnType spawnType,
         BlockPos pos,
@@ -82,20 +97,50 @@ public abstract class AbstractHumanlikeEntity extends PathfinderMob implements I
         boolean blockValid = level.getBlockState(pos.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON);
 
         RPGMobs.LOGGER.info("Evaluating spawn for {} at [{} {} {}] -> Light Valid: {}, Block Valid: {}",
-                humanlike.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ(), lightValid, blockValid);
+            humanlike.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ(), lightValid, blockValid);
 
         return blockValid && lightValid;
     }
 
-    public void registerBasicGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 10.0F));
-        //this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0F));
-        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+    @Override
+    protected Brain.@NotNull Provider<T> brainProvider() {
+        return new SmartBrainProvider<>((T) this);
     }
 
-    public void registerCowardGoals() {
-        this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
+    @Override
+    protected void customServerAiStep() {
+        tickBrain((T) this);
+    }
+
+    @Override
+    public List<ExtendedSensor<T>> getSensors() {
+        return ObjectArrayList.of(
+            new NearbyLivingEntitySensor<>(), // This tracks nearby entities
+            new HurtBySensor<>()              // This tracks the last damage source and attacker
+        );
+    }
+
+    @Override
+    public BrainActivityGroup<T> getCoreTasks() {
+        return BrainActivityGroup.coreTasks(
+            new LookAtTarget<>(),
+            new MoveToWalkTarget<>(),
+            new FloatToSurfaceOfFluid<>()
+        );
+    }
+
+    @Override
+    public BrainActivityGroup<T> getIdleTasks() {
+        return BrainActivityGroup.idleTasks(
+            new FirstApplicableBehaviour<T>(
+                new SetPlayerLookTarget<>(),
+                new SetRandomLookTarget<>()
+            ),
+            new OneRandomBehaviour<T>(
+                new SetRandomWalkTarget<>(),
+                new Idle<>().runFor(entity -> entity.getRandom().nextInt(30, 60))
+            )
+        );
     }
 
     public void setEquipment(EquipmentSlot equipmentSlot, ItemStack itemStack) {
@@ -105,20 +150,21 @@ public abstract class AbstractHumanlikeEntity extends PathfinderMob implements I
         this.onEquipmentChanged();
     }
 
-    public void onEquipmentChanged() {}
+    public void onEquipmentChanged() {
+    }
 
     @Override
     public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
 
-        this.factionService.saveEnemyFactions(nbt);
+        this.factionService.saveFactions(nbt);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
 
-        this.factionService.loadEnemyFactions(nbt);
+        this.factionService.loadFactions(nbt);
     }
 
     @Override
@@ -146,19 +192,9 @@ public abstract class AbstractHumanlikeEntity extends PathfinderMob implements I
     }
 
     @Override
-    protected void registerGoals() {
-        this.registerBasicGoals();
-
-        if (this.isCoward) {
-            this.registerCowardGoals();
-        }
-    }
-
-    @Override
     public void swing(@NotNull InteractionHand hand, boolean updateVisuals) {
         super.swing(hand, updateVisuals);
 
-        // If we are on the server side, broadcast the swing animation status to the clients
         if (!this.level().isClientSide() && this.level() instanceof ServerLevel serverLevel) {
             serverLevel.getChunkSource().broadcastAndSend(this,
                 new ClientboundAnimatePacket(this, hand == InteractionHand.MAIN_HAND ? 0 : 3)

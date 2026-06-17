@@ -4,7 +4,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 
-public class HumanGuardEntity extends AbstractHumanCombatantEntity {
+public class HumanGuardEntity extends AbstractHumanCombatantEntity<HumanGuardEntity> {
     public HumanGuardEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
