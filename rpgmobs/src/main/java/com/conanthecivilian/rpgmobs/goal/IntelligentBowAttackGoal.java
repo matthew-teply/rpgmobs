@@ -1,7 +1,5 @@
 package com.conanthecivilian.rpgmobs.goal;
 
-import java.util.EnumSet;
-
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
 import com.conanthecivilian.rpgmobs.entity.custom.utility.IRangedAttackStrafingMob;
@@ -14,6 +12,8 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.BowItem;
 
+import java.util.EnumSet;
+
 public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & RangedAttackMob> extends Goal {
     private final T shooter;
     private final double speedModifier;
@@ -25,6 +25,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
     private boolean strafingBackwards;
     private int strafingTime;
 
+    private boolean isFleeing = false;
     private int fleeingTime;
     private boolean isOnFleeingCooldown;
 
@@ -36,10 +37,10 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
     private String stage = "";
 
     public IntelligentBowAttackGoal(
-            T shooter,
-            double speedModifier,
-            int attackIntervalMin,
-            float attackRadiusSqr
+        T shooter,
+        double speedModifier,
+        int attackIntervalMin,
+        float attackRadiusSqr
     ) {
         this.attackTime = -1;
         this.strafingTime = -1;
@@ -70,7 +71,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
     }
 
     public boolean canContinueToUse() {
-        return (this.canUse() || !this.shooter.getNavigation().isDone()) && this.isHoldingBow() && !this.shooter.isFleeing;
+        return (this.canUse() || !this.shooter.getNavigation().isDone()) && this.isHoldingBow() && !this.isFleeing;
     }
 
     public void start() {
@@ -120,7 +121,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
     }
 
     public void tick() {
-        this.shooter.setCustomName(Component.literal(this.stage + " (isFleeing: " + this.shooter.isFleeing + ")"));
+        this.shooter.setCustomName(Component.literal(this.stage + " (isFleeing: " + this.isFleeing + ")"));
 
         LivingEntity targetEntity = this.shooter.getTarget();
 
@@ -148,7 +149,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 --this.seeTime;
             }
 
-            if ((this.isOnFleeingCooldown || !this.shooter.isFleeing) && this.fleeingTime > -1) {
+            if ((this.isOnFleeingCooldown || !this.isFleeing) && this.fleeingTime > -1) {
                 --this.fleeingTime;
             }
 
@@ -156,23 +157,23 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 this.isOnFleeingCooldown = false;
             }
 
-            if (this.shooter.isFleeing) {
+            if (this.isFleeing) {
                 if (this.fleeingTime < MAX_FLEEING_TIME_IN_SECONDS * 20) {
                     ++this.fleeingTime;
                 } else {
                     this.isOnFleeingCooldown = true;
-                    this.shooter.isFleeing = false;
+                    this.isFleeing = false;
                 }
             }
 
             this.shooter.getLookControl().setLookAt(targetEntity, 30.0F, 30.0F);
 
-            RPGMobs.LOGGER.debug("{} < (double){}: {}", distanceToTargetEntity, (double)this.attackRadiusSqr, distanceToTargetEntity < (double)this.attackRadiusSqr);
+            RPGMobs.LOGGER.debug("{} < (double){}: {}", distanceToTargetEntity, (double) this.attackRadiusSqr, distanceToTargetEntity < (double) this.attackRadiusSqr);
 
             boolean canBeReached = this.canTargetReachMe(targetEntity);
 
             // State 1: ACTIVE FLEEING (Maintain flee state until timer runs out or cooldown hits)
-            if (this.shooter.isFleeing && !this.isOnFleeingCooldown && this.isTargetRunningTowardsMe) {
+            if (this.isFleeing && !this.isOnFleeingCooldown && this.isTargetRunningTowardsMe) {
                 this.stage = "Fleeing (Maintaining)";
 
                 // Check if we have calculated a retreat point. If navigation is idle, refresh it.
@@ -192,9 +193,9 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 }
 
                 // State 2: TRIGGER NEW FLEE (Target entered the danger zone and can reach us)
-            } else if (!this.isOnFleeingCooldown && canBeReached && distanceToTargetEntity < (double)(this.attackRadiusSqr / 4)) {
+            } else if (!this.isOnFleeingCooldown && canBeReached && distanceToTargetEntity < (double) (this.attackRadiusSqr / 4)) {
                 this.stage = "Fleeing (Triggered)";
-                this.shooter.isFleeing = true;
+                this.isFleeing = true;
                 this.strafingTime = -1; // Terminate strafing states
 
                 double xEscapeDir = this.getXEscapeDir(targetEntity);
@@ -211,9 +212,9 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 }
 
                 // State 3: IDEAL RANGE - HOLD POSITION & STRAFE (Target is outside danger zone, but within firing range)
-            } else if (distanceToTargetEntity <= (double)this.attackRadiusSqr && this.seeTime >= 20) {
+            } else if (distanceToTargetEntity <= (double) this.attackRadiusSqr && this.seeTime >= 20) {
                 this.stage = "Holding position";
-                this.shooter.isFleeing = false;
+                this.isFleeing = false;
 
                 // Stop standard pathfinding navigation completely to lock coordinates
                 this.shooter.getNavigation().stop();
@@ -222,7 +223,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 // State 4: TARGET IS TOO FAR AWAY (Close the gap)
             } else {
                 this.stage = "Closing Gap";
-                this.shooter.isFleeing = false;
+                this.isFleeing = false;
                 this.strafingTime = -1;
 
                 double xDiff = targetEntity.getX() - this.shooter.getX();
@@ -253,11 +254,11 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
 
             if (this.shooter instanceof IRangedAttackStrafingMob) {
                 if (this.strafingTime >= 20) {
-                    if ((double)this.shooter.getRandom().nextFloat() < 0.3) {
+                    if ((double) this.shooter.getRandom().nextFloat() < 0.3) {
                         this.strafingClockwise = !this.strafingClockwise;
                     }
 
-                    if ((double)this.shooter.getRandom().nextFloat() < 0.3) {
+                    if ((double) this.shooter.getRandom().nextFloat() < 0.3) {
                         this.strafingBackwards = !this.strafingBackwards;
                     }
 
@@ -265,7 +266,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 }
             }
 
-            if (this.strafingTime > -1 && this.shooter instanceof IRangedAttackStrafingMob && !this.shooter.isFleeing) {
+            if (this.strafingTime > -1 && this.shooter instanceof IRangedAttackStrafingMob && !this.isFleeing) {
                 if (distanceToTargetEntity > (double) (this.attackRadiusSqr * 0.75F)) {
                     this.strafingBackwards = false;
                 } else if (distanceToTargetEntity < (double) (this.attackRadiusSqr * 0.25F)) {
@@ -283,7 +284,7 @@ public class IntelligentBowAttackGoal<T extends AbstractHumanlikeEntity & Ranged
                 this.shooter.lookAt(targetEntity, 30.0F, 30.0F);
             }
 
-            if (this.shooter.isFleeing) {
+            if (this.isFleeing) {
                 this.shooter.stopUsingItem();
             } else if (this.shooter.isUsingItem()) {
                 if (!hasLineOfSight && this.seeTime < -60) {
