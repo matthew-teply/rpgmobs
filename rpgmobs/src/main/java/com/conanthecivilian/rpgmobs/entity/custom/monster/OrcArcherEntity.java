@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
-public class OrcArcherEntity extends AbstractOrcCombatantEntity implements IRangedAttackStrafingMob {
+public class OrcArcherEntity extends AbstractOrcCombatantEntity<OrcArcherEntity> implements IRangedAttackStrafingMob {
     public OrcArcherEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 

@@ -1,100 +1,79 @@
 package com.conanthecivilian.rpgmobs.entity.custom;
 
-import com.conanthecivilian.rpgmobs.goal.IntelligentBowAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RangedCrossbowAttackGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.*;
+import net.minecraft.world.entity.ai.behavior.CrossbowAttack;
+import net.minecraft.world.entity.monster.CrossbowAttackMob;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.tslat.smartbrainlib.api.SmartBrainOwner;
+import net.tslat.smartbrainlib.api.core.BrainActivityGroup;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.attack.AnimatableMeleeAttack;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.attack.BowAttack;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.path.SetWalkTargetToAttackTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.target.InvalidateAttackTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.target.SetRetaliateTarget;
+import net.tslat.smartbrainlib.api.core.behaviour.custom.target.TargetOrRetaliate;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
-public abstract class AbstractCombatantEntity extends AbstractHumanlikeEntity implements RangedAttackMob, CrossbowAttackMob {
+public abstract class AbstractCombatantEntity<T extends AbstractCombatantEntity<T>> extends AbstractHumanlikeEntity<T> implements
+    SmartBrainOwner<T>,
+    RangedAttackMob,
+    CrossbowAttackMob {
     private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(
         AbstractCombatantEntity.class,
         EntityDataSerializers.BOOLEAN
     );
 
-    protected IntelligentBowAttackGoal<AbstractCombatantEntity> rangedBowAttackGoal;
-    protected RangedCrossbowAttackGoal<AbstractCombatantEntity> rangedCrossbowAttackGoal;
-    protected MeleeAttackGoal meleeAttackGoal;
-
     public AbstractCombatantEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }
 
-    public void registerCombatStyleGoals() {
-        if (!this.level().isClientSide()) {
-            Item weaponItem = this.getItemBySlot(EquipmentSlot.MAINHAND).getItem();
+    @Override
+    public BrainActivityGroup<T> getIdleTasks() {
+        BrainActivityGroup<T> idleTasks = super.getIdleTasks();
 
-            if (weaponItem instanceof AirItem) {
-                return;
-            }
+        idleTasks.getBehaviours().addFirst(
+            new TargetOrRetaliate<>()
+                .attackablePredicate(entity -> this.factionService.isEnemyFaction(entity) || entity.getLastHurtMob() == this)
+                .isAllyIf((mob, entity) -> this.factionService.isAllyFaction(entity))
+                .alertAlliesWhen((mob, entity) ->
+                    entity instanceof LivingEntity livingTarget && (
+                        this.factionService.isEnemyFaction(livingTarget) || livingTarget.getLastHurtMob() == this
+                    )
+                )
+        );
+        idleTasks.getBehaviours().addFirst(new SetRetaliateTarget<>());
 
-            if (this.rangedBowAttackGoal == null) {
-                this.rangedBowAttackGoal = new IntelligentBowAttackGoal<>(this, 1.2, 20, 15.0F);
-            }
-
-            if (this.rangedCrossbowAttackGoal == null) {
-                this.rangedCrossbowAttackGoal = new RangedCrossbowAttackGoal<>(this, 1.0, 8.0F);
-            }
-
-            if (this.meleeAttackGoal == null) {
-                this.meleeAttackGoal = new MeleeAttackGoal(this, 1.0, false);
-            }
-
-            this.goalSelector.removeGoal(this.meleeAttackGoal);
-            this.goalSelector.removeGoal(this.rangedBowAttackGoal);
-            this.goalSelector.removeGoal(this.rangedCrossbowAttackGoal);
-
-            if (weaponItem instanceof ProjectileWeaponItem) {
-                if (weaponItem instanceof CrossbowItem) {
-                    this.goalSelector.addGoal(1, this.rangedCrossbowAttackGoal);
-                } else {
-                    this.goalSelector.addGoal(1, this.rangedBowAttackGoal);
-                }
-            } else {
-                this.goalSelector.addGoal(1, this.meleeAttackGoal);
-            }
-        }
+        return idleTasks;
     }
 
     @Override
-    protected void registerGoals() {
-        this.registerCombatStyleGoals();
-        this.registerEnemyFactionAttackGoals();
-
-        super.registerGoals();
-
-        this.registerAdditionalAttackGoals();
-    }
-
-    public void registerAdditionalAttackGoals() {}
-
-    public void registerEnemyFactionAttackGoals() {
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(
-            this,
-            LivingEntity.class,
-            10,
-            true,
-            false,
-            entity -> !(entity instanceof Creeper) && this.factionService.isEnemyFaction(entity)
-        ));
+    public BrainActivityGroup<T> getFightTasks() { // These are the tasks that handle fighting
+        return BrainActivityGroup.fightTasks(
+            new InvalidateAttackTarget<>(),      // Cancel fighting if the target is no longer valid
+            new SetWalkTargetToAttackTarget<>(), // Set the walk target to the attack target
+            new BowAttack<>(20).startCondition(
+                entity -> entity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof BowItem
+            ),
+            new CrossbowAttack<>(),
+            new AnimatableMeleeAttack<>(0).startCondition(
+                entity -> !(entity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ProjectileWeaponItem)
+            )
+        );
     }
 
     @Override
@@ -109,15 +88,6 @@ public abstract class AbstractCombatantEntity extends AbstractHumanlikeEntity im
 
     protected AbstractArrow getArrow(ItemStack arrow, float velocity, @Nullable ItemStack weapon) {
         return ProjectileUtil.getMobArrow(this, arrow, velocity, weapon);
-    }
-
-    @Override
-    public void setItemSlot(@NotNull EquipmentSlot slot, @NotNull ItemStack stack) {
-        super.setItemSlot(slot, stack);
-
-        if (!this.level().isClientSide) {
-            this.registerCombatStyleGoals();
-        }
     }
 
     @Override
@@ -152,7 +122,7 @@ public abstract class AbstractCombatantEntity extends AbstractHumanlikeEntity im
         double d2 = target.getZ() - abstractArrow.getZ();
         double d3 = Math.sqrt(d0 * d0 + d2 * d2);
 
-        abstractArrow.shoot(d0, d1 + d3 * 0.2F, d2, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
+        abstractArrow.shoot(d0, d1 + d3 * 0.2F, d2, 1.6F, (float) (14 - this.level().getDifficulty().getId() * 4));
 
         this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
         this.level().addFreshEntity(abstractArrow);
@@ -180,9 +150,7 @@ public abstract class AbstractCombatantEntity extends AbstractHumanlikeEntity im
 
     @Override
     public BipedArmPose getArmPose() {
-        if (this.isFleeing) {
-            return BipedArmPose.NEUTRAL;
-        } else if (this.isChargingCrossbow()) {
+        if (this.isChargingCrossbow()) {
             return BipedArmPose.CROSSBOW_CHARGE;
         } else if (this.isHolding(is -> is.getItem() instanceof CrossbowItem)) {
             return BipedArmPose.CROSSBOW_HOLD;
