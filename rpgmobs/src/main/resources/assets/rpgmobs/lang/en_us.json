@@ -1,0 +1,13 @@
+{
+  "itemGroup.rpgmobs": "Example Mod Tab",
+  "block.rpgmobs.example_block": "Example Block",
+  "item.rpgmobs.example_item": "Example Item",
+
+  "rpgmobs.configuration.title": "RPG Mobs Configs",
+  "rpgmobs.configuration.section.rpgmobs.common.toml": "RPG Mobs Configs",
+  "rpgmobs.configuration.section.rpgmobs.common.toml.title": "RPG Mobs Configs",
+  "rpgmobs.configuration.items": "Item List",
+  "rpgmobs.configuration.logDirtBlock": "Log Dirt Block",
+  "rpgmobs.configuration.magicNumberIntroduction": "Magic Number Text",
+  "rpgmobs.configuration.magicNumber": "Magic Number"
+}

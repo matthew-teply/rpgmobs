@@ -1,0 +1,14 @@
+package com.conanthecivilian.rpgmobs.entity.custom.monster;
+
+import net.minecraft.world.entity.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+
+public class OrcFighterEntity extends AbstractOrcCombatantEntity {
+    public OrcFighterEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level);
+
+        this.setEquipment(EquipmentSlot.MAINHAND, new ItemStack(Items.STONE_SWORD));
+    }
+}
