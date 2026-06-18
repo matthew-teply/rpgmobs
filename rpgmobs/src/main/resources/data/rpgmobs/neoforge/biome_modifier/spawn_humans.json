@@ -4,13 +4,13 @@
   "spawners": [
     {
       "type": "rpgmobs:human_guard",
-      "weight": 20,
+      "weight": 12,
       "minCount": 1,
       "maxCount": 1
     },
     {
       "type": "rpgmobs:human_archer",
-      "weight": 20,
+      "weight": 12,
       "minCount": 1,
       "maxCount": 1
     }

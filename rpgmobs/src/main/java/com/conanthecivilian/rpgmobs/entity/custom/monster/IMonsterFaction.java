@@ -1,5 +1,6 @@
 package com.conanthecivilian.rpgmobs.entity.custom.monster;
 
+import com.conanthecivilian.rpgmobs.entity.custom.dwarf.IDwarfFaction;
 import com.conanthecivilian.rpgmobs.entity.custom.human.IHumanFaction;
 import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.monster.Enemy;
@@ -14,6 +15,7 @@ public interface IMonsterFaction {
 
         enemies.add(Player.class);
         enemies.add(IHumanFaction.class);
+        enemies.add(IDwarfFaction.class);
         enemies.add(AbstractGolem.class);
         enemies.add(Enemy.class);
         enemies.add(AbstractVillager.class);

@@ -1,8 +1,8 @@
-package com.conanthecivilian.rpgmobs.entity.custom.human;
+package com.conanthecivilian.rpgmobs.entity.custom.dwarf;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.AbstractCombatantEntity;
-import com.conanthecivilian.rpgmobs.entity.custom.dwarf.IDwarfFaction;
+import com.conanthecivilian.rpgmobs.entity.custom.human.IHumanFaction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -11,14 +11,14 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 
-public abstract class AbstractHumanCombatantEntity<T extends AbstractHumanCombatantEntity<T>> extends AbstractCombatantEntity<T> implements IHumanFaction {
-    public AbstractHumanCombatantEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
+public abstract class AbstractDwarfEntity<T extends AbstractDwarfEntity<T>> extends AbstractCombatantEntity<T> implements IDwarfFaction {
+    public AbstractDwarfEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
         this.factionService.addEnemyFactions(this.getEnemyList());
 
-        this.factionService.addAllyFaction(IHumanFaction.class);
         this.factionService.addAllyFaction(IDwarfFaction.class);
+        this.factionService.addAllyFaction(IHumanFaction.class);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -31,6 +31,6 @@ public abstract class AbstractHumanCombatantEntity<T extends AbstractHumanCombat
 
     @Override
     public ResourceLocation getTextureLocation() {
-        return ResourceLocation.fromNamespaceAndPath(RPGMobs.MODID, "textures/entity/human/guard.png");
+        return ResourceLocation.fromNamespaceAndPath(RPGMobs.MODID, "textures/entity/dwarf/dwarf.png");
     }
 }

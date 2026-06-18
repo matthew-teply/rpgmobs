@@ -2,6 +2,7 @@ package com.conanthecivilian.rpgmobs.entity;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
+import com.conanthecivilian.rpgmobs.entity.custom.dwarf.IDwarfFaction;
 import com.conanthecivilian.rpgmobs.entity.custom.human.IHumanFaction;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -19,7 +20,7 @@ public class ModSpawnPlacements {
             ModEntities.HUMAN_GUARD.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            IHumanFaction::getSpawnRules,
+            IHumanFaction::checkHumanSpawnRules,
             RegisterSpawnPlacementsEvent.Operation.OR
         );
 
@@ -27,7 +28,23 @@ public class ModSpawnPlacements {
             ModEntities.HUMAN_ARCHER.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            IHumanFaction::getSpawnRules,
+            IHumanFaction::checkHumanSpawnRules,
+            RegisterSpawnPlacementsEvent.Operation.OR
+        );
+
+        event.register(
+            ModEntities.DWARF_GUARD.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            IDwarfFaction::checkDwarfSpawnRules,
+            RegisterSpawnPlacementsEvent.Operation.OR
+        );
+
+        event.register(
+            ModEntities.DWARF_ARCHER.get(),
+            SpawnPlacementTypes.ON_GROUND,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            IDwarfFaction::checkDwarfSpawnRules,
             RegisterSpawnPlacementsEvent.Operation.OR
         );
 

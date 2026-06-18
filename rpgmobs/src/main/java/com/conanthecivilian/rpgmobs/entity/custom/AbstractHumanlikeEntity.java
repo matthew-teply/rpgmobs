@@ -50,7 +50,7 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         super(entityType, level);
     }
 
-    public enum BipedArmPose {
+    public enum HumanlikeArmPose {
         BOW_AND_ARROW,
         CROSSBOW_HOLD,
         CROSSBOW_CHARGE,
@@ -69,8 +69,8 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
             .add(Attributes.FOLLOW_RANGE, 32.0);
     }
 
-    public BipedArmPose getArmPose() {
-        return BipedArmPose.NEUTRAL;
+    public HumanlikeArmPose getArmPose() {
+        return HumanlikeArmPose.NEUTRAL;
     }
 
     public void aiStep() {

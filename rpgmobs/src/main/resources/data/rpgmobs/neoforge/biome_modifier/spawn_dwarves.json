@@ -3,14 +3,14 @@
   "biomes": "#minecraft:is_overworld",
   "spawners": [
     {
-      "type": "rpgmobs:orc_fighter",
-      "weight": 15,
+      "type": "rpgmobs:dwarf_guard",
+      "weight": 10,
       "minCount": 1,
       "maxCount": 1
     },
     {
-      "type": "rpgmobs:orc_archer",
-      "weight": 15,
+      "type": "rpgmobs:dwarf_archer",
+      "weight": 10,
       "minCount": 1,
       "maxCount": 1
     }

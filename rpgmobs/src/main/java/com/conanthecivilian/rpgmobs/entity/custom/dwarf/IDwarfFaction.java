@@ -1,4 +1,4 @@
-package com.conanthecivilian.rpgmobs.entity.custom.human;
+package com.conanthecivilian.rpgmobs.entity.custom.dwarf;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.monster.IMonsterFaction;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.LevelAccessor;
 
 import java.util.ArrayList;
 
-public interface IHumanFaction {
+public interface IDwarfFaction {
     default ArrayList<Class<?>> getEnemyList() {
         ArrayList<Class<?>> enemies = new ArrayList<>();
 
@@ -23,26 +23,32 @@ public interface IHumanFaction {
         return enemies;
     }
 
-    static boolean checkHumanSpawnRules(
-        EntityType<? extends AbstractHumanCombatantEntity<?>> entity,
+    static boolean checkDwarfSpawnRules(
+        EntityType<? extends AbstractDwarfEntity<?>> entity,
         LevelAccessor level,
         MobSpawnType spawnType,
         BlockPos pos,
         RandomSource random
     ) {
+        float spawnChance = 0.5f;
+
         if (!level.getBlockState(pos.below()).isValidSpawn(level, pos.below(), entity)) {
             return false;
         }
 
-        if (level instanceof ServerLevel serverLevel) {
-            var villageCheck = serverLevel.structureManager().getStructureWithPieceAt(pos, StructureTags.VILLAGE);
+        if (pos.getY() <= level.getSeaLevel()) {
+            if (level instanceof ServerLevel serverLevel) {
+                var mineshaftCheck = serverLevel.structureManager().getStructureWithPieceAt(pos, StructureTags.MINESHAFT);
 
-            if (villageCheck.isValid()) {
-                return true;
+                if (mineshaftCheck.isValid()) {
+                    spawnChance = 1f;
+                }
             }
+        } else {
+            spawnChance = 0.1f;
         }
 
-        boolean isSpawned = random.nextFloat() < 0.20F;
+        boolean isSpawned = random.nextFloat() < spawnChance;
 
         if (isSpawned) {
             RPGMobs.LOGGER.debug("Spawned {} at [{} {} {}]",

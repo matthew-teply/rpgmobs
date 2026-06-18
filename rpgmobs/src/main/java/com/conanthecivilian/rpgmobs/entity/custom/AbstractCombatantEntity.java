@@ -149,15 +149,15 @@ public abstract class AbstractCombatantEntity<T extends AbstractCombatantEntity<
     }
 
     @Override
-    public BipedArmPose getArmPose() {
+    public HumanlikeArmPose getArmPose() {
         if (this.isChargingCrossbow()) {
-            return BipedArmPose.CROSSBOW_CHARGE;
+            return HumanlikeArmPose.CROSSBOW_CHARGE;
         } else if (this.isHolding(is -> is.getItem() instanceof CrossbowItem)) {
-            return BipedArmPose.CROSSBOW_HOLD;
+            return HumanlikeArmPose.CROSSBOW_HOLD;
         } else if (this.isHolding(is -> is.getItem() instanceof BowItem)) {
-            return BipedArmPose.BOW_AND_ARROW;
+            return HumanlikeArmPose.BOW_AND_ARROW;
         } else {
-            return BipedArmPose.NEUTRAL;
+            return HumanlikeArmPose.NEUTRAL;
         }
     }
 
