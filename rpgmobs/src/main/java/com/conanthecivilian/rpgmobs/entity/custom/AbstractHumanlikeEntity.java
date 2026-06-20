@@ -2,21 +2,28 @@ package com.conanthecivilian.rpgmobs.entity.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.service.FactionService;
+import com.conanthecivilian.rpgmobs.ui.menu.ConversationMenu;
+import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
+import com.lowdragmc.lowdraglib2.gui.factory.PlayerUIMenuType;
+import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
@@ -45,7 +52,8 @@ import java.util.List;
 
 public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<T>> extends PathfinderMob implements
     IHumanLike,
-    SmartBrainOwner<T> {
+    SmartBrainOwner<T>,
+    IContainerUIHolder {
     protected AbstractHumanlikeEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
     }
@@ -67,6 +75,27 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
             .add(Attributes.MAX_HEALTH, 10.0)
             .add(Attributes.ATTACK_DAMAGE, 2.0)
             .add(Attributes.FOLLOW_RANGE, 32.0);
+    }
+
+    @Override
+    public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            PlayerUIMenuType.openUI(serverPlayer, RPGMobs.CONVERSATION_UI_ID);
+        }
+
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public @NotNull ModularUI createUI(@NotNull Player player) {
+        // Called on the server to build the UI
+        return ConversationMenu.createModularUI(player);
+    }
+
+    @Override
+    public boolean isStillValid(@NotNull Player player) {
+        // Return false to close the UI, e.g. if the block was broken
+        return true;
     }
 
     public HumanlikeArmPose getArmPose() {

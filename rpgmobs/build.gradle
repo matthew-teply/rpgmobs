@@ -31,13 +31,14 @@ repositories {
         forRepository {
             maven {
                 name = 'SmartBrainLib'
-                url = 'https://dl.cloudsmith.io/public/tslat/sbl/maven/'
+                url uri('https://dl.cloudsmith.io/public/tslat/sbl/maven/')
             }
         }
         filter {
-            includeGroup('net.tslat.smartbrainlib')
+            includeGroup 'net.tslat.smartbrainlib'
         }
     }
+    maven { url = "https://maven.firstdark.dev/snapshots" }
 }
 
 base {
@@ -129,7 +130,7 @@ configurations {
 
 dependencies {
     implementation "net.tslat.smartbrainlib:SmartBrainLib-neoforge-${project.minecraft_version}:1.16.11"
-    // Example: implementation "net.tslat.smartbrainlib:SmartBrainLib-neoforge-1.21.1:1.16.11"
+    implementation "com.lowdragmc.ldlib2:ldlib2-neoforge-1.21.1:2.2.23"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

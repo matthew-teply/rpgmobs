@@ -2,7 +2,9 @@ package com.conanthecivilian.rpgmobs;
 
 import com.conanthecivilian.rpgmobs.entity.ModEntities;
 import com.conanthecivilian.rpgmobs.item.ModItems;
+import com.conanthecivilian.rpgmobs.ui.menu.ModMenus;
 import com.mojang.logging.LogUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -13,6 +15,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -26,6 +29,9 @@ public class RPGMobs {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    public static final ResourceLocation CONVERSATION_UI_ID =
+        ResourceLocation.fromNamespaceAndPath("rpgmobs", "conversation_menu");
+
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public RPGMobs(IEventBus modEventBus, ModContainer modContainer) {
@@ -34,6 +40,7 @@ public class RPGMobs {
 
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
+        ModMenus.MENUS.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (RPGMobs) to respond directly to events.
@@ -63,11 +70,16 @@ public class RPGMobs {
         LOGGER.info("HELLO from server starting");
     }
 
-    @EventBusSubscriber(modid = RPGMobs.MODID, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = RPGMobs.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             ModEntities.registerRenderers(event);
+        }
+
+        @SubscribeEvent
+        public static void registerClientScreens(RegisterMenuScreensEvent event) {
+            ModMenus.registerMenus();
         }
     }
 }
