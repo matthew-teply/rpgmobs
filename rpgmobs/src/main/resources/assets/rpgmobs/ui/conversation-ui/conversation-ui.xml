@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ldlib2-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/Low-Drag-MC/LDLib2/refs/heads/1.21/ldlib2-ui.xsd">
+    <stylesheet location="rpgmobs:ui/conversation-ui/conversation-ui.lss"/>
+    <root class="root">
+        <element class="container">
+            <element class="title-container">
+                <element style="flex: 1;">
+                </element>
+                <label id="label-title" class="title font-standard">Jeff - Human Guard</label>
+                <element style="flex: 1;">b</element>
+            </element>
+
+            <element class="body-container">
+                <scroller-view class="content-container">
+                    <label class="font-standard">Greetings, my name is Jeff. I was sent here by my liege to keep the
+                        peace.
+                    </label>
+                </scroller-view>
+
+                <element class="actions-container">
+
+                    <element>
+                        <label class="label font-small">Relationship</label>
+                        <progress-bar min-value="0" max-value="100" value="65" text="65/100"/>
+                    </element>
+
+                    <element style="flex: 1;">
+                        <label class="label font-small">Topics</label>
+                        <scroller-view class="topics-container">
+                            <button class="topic font-standard" text="Rumors"/>
+                            <button class="topic font-standard" text="Faction"/>
+                            <button class="topic font-standard" text="Nearby enemies"/>
+                            <button class="topic font-standard" text="Nearby structures"/>
+                            <button class="topic font-standard" text="Nearby ores"/>
+                            <button class="topic font-standard" text="Nearby allies"/>
+                        </scroller-view>
+                    </element>
+
+                    <button id="button-exit" text="Goodbye"/>
+                </element>
+            </element>
+        </element>
+    </root>
+</ldlib2-ui>

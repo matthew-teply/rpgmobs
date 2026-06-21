@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.entity.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
+import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
 import com.conanthecivilian.rpgmobs.service.FactionService;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
@@ -21,7 +21,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -107,27 +106,19 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            RPGMobs.LOGGER.debug("Opening conversation screen...");
-
-            serverPlayer.openMenu(new SimpleMenuProvider(
-                (windowId, playerInventory, p) -> new ConversationMenu(windowId, playerInventory, this),
-                Component.literal("Conversation")
-            ), buf -> {
-                buf.writeInt(this.getId());
-            });
+            ConversationUI.open(serverPlayer, this);
         }
 
         return InteractionResult.SUCCESS;
     }
 
     @Override
-    public ModularUI createUI(Player player) {
-        return ConversationMenu.createModularUI(player, this);
+    public @NotNull ModularUI createUI(@NotNull Player player) {
+        return ConversationUI.createModularUI(player, this);
     }
 
     @Override
-    public boolean isStillValid(Player player) {
-        // Return false to close the UI, e.g. if the block was broken
+    public boolean isStillValid(@NotNull Player player) {
         return !this.dead;
     }
 
