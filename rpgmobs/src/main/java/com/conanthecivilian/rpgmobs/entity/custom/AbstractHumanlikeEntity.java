@@ -1,15 +1,18 @@
 package com.conanthecivilian.rpgmobs.entity.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
+import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.service.FactionService;
-import com.conanthecivilian.rpgmobs.ui.menu.ConversationMenu;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
-import com.lowdragmc.lowdraglib2.gui.factory.PlayerUIMenuType;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,6 +21,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -56,6 +60,17 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
     IContainerUIHolder {
     protected AbstractHumanlikeEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
+
+        this.setCustomName(Component.literal(String.valueOf(this.getId())));
+    }
+
+    private static final EntityDataAccessor<Integer> RELATIONSHIP = SynchedEntityData.defineId(AbstractHumanlikeEntity.class, EntityDataSerializers.INT);
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
+        builder.define(RELATIONSHIP, 0);
     }
 
     public enum HumanlikeArmPose {
@@ -77,25 +92,43 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
             .add(Attributes.FOLLOW_RANGE, 32.0);
     }
 
+    public void setRelationship(int value) {
+        if (value < 0 || value > 100) {
+            return;
+        }
+
+        this.entityData.set(RELATIONSHIP, value);
+    }
+
+    public int getRelationship() {
+        return this.entityData.get(RELATIONSHIP);
+    }
+
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            PlayerUIMenuType.openUI(serverPlayer, RPGMobs.CONVERSATION_UI_ID);
+            RPGMobs.LOGGER.debug("Opening conversation screen...");
+
+            serverPlayer.openMenu(new SimpleMenuProvider(
+                (windowId, playerInventory, p) -> new ConversationMenu(windowId, playerInventory, this),
+                Component.literal("Conversation")
+            ), buf -> {
+                buf.writeInt(this.getId());
+            });
         }
 
         return InteractionResult.SUCCESS;
     }
 
     @Override
-    public @NotNull ModularUI createUI(@NotNull Player player) {
-        // Called on the server to build the UI
-        return ConversationMenu.createModularUI(player);
+    public ModularUI createUI(Player player) {
+        return ConversationMenu.createModularUI(player, this);
     }
 
     @Override
-    public boolean isStillValid(@NotNull Player player) {
+    public boolean isStillValid(Player player) {
         // Return false to close the UI, e.g. if the block was broken
-        return true;
+        return !this.dead;
     }
 
     public HumanlikeArmPose getArmPose() {
@@ -186,12 +219,16 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
     public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
 
+        nbt.putInt("Relationship", this.getRelationship());
+
         this.factionService.saveFactions(nbt);
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
+
+        this.setRelationship(nbt.getInt("Relationship"));
 
         this.factionService.loadFactions(nbt);
     }
