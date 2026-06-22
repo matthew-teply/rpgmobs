@@ -14,8 +14,8 @@ public abstract class AbstractOrcCombatantEntity<T extends AbstractOrcCombatantE
     public AbstractOrcCombatantEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
-        this.factionService.addEnemyFactions(this.getEnemyList());
-        this.factionService.addAllyFaction(IMonsterFaction.class);
+        this.factionManager.addEnemyFactions(this.getEnemyList());
+        this.factionManager.addAllyFaction(IMonsterFaction.class);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

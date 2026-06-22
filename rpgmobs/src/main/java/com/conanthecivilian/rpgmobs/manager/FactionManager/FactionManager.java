@@ -1,4 +1,4 @@
-package com.conanthecivilian.rpgmobs.service;
+package com.conanthecivilian.rpgmobs.manager.FactionManager;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import net.minecraft.nbt.CompoundTag;
@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 import java.util.ArrayList;
 
-public class FactionService {
+public class FactionManager {
     private static final String NBT_KEY_ENEMY_FACTIONS = "FactionEnemies";
     private static final String NBT_KEY_ALLY_FACTIONS = "FactionAllies";
 

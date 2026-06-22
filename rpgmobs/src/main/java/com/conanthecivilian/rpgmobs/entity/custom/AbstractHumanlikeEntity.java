@@ -1,8 +1,9 @@
 package com.conanthecivilian.rpgmobs.entity.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
+import com.conanthecivilian.rpgmobs.manager.FactionManager.FactionManager;
+import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
-import com.conanthecivilian.rpgmobs.service.FactionService;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -79,7 +80,7 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         NEUTRAL;
     }
 
-    public FactionService factionService = new FactionService();
+    public FactionManager factionManager = new FactionManager();
 
     public HashMap<EquipmentSlot, ItemStack> equipment = new HashMap<>();
 
@@ -106,7 +107,7 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
-            ConversationUI.open(serverPlayer, this);
+            ConversationMenu.open(serverPlayer, this);
         }
 
         return InteractionResult.SUCCESS;
@@ -114,7 +115,9 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
 
     @Override
     public @NotNull ModularUI createUI(@NotNull Player player) {
-        return ConversationUI.createModularUI(player, this);
+        ConversationUI conversationUI = new ConversationUI(player, this);
+
+        return conversationUI.createModularUI();
     }
 
     @Override
@@ -212,7 +215,7 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
 
         nbt.putInt("Relationship", this.getRelationship());
 
-        this.factionService.saveFactions(nbt);
+        this.factionManager.saveFactions(nbt);
     }
 
     @Override
@@ -221,7 +224,7 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
 
         this.setRelationship(nbt.getInt("Relationship"));
 
-        this.factionService.loadFactions(nbt);
+        this.factionManager.loadFactions(nbt);
     }
 
     @Override

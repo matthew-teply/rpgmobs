@@ -15,10 +15,10 @@ public abstract class AbstractHumanCombatantEntity<T extends AbstractHumanCombat
     public AbstractHumanCombatantEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
-        this.factionService.addEnemyFactions(this.getEnemyList());
+        this.factionManager.addEnemyFactions(this.getEnemyList());
 
-        this.factionService.addAllyFaction(IHumanFaction.class);
-        this.factionService.addAllyFaction(IDwarfFaction.class);
+        this.factionManager.addAllyFaction(IHumanFaction.class);
+        this.factionManager.addAllyFaction(IDwarfFaction.class);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

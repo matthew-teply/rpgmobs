@@ -1,194 +1,122 @@
 package com.conanthecivilian.rpgmobs.screen.custom.conversation;
 
+import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
 import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.SupplierDataSource;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
-import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
-import com.lowdragmc.lowdraglib2.gui.ui.data.ScrollerMode;
-import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ProgressBar;
-import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
-import net.minecraft.client.Minecraft;
+import com.lowdragmc.lowdraglib2.utils.XmlUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 
-public class ConversationUI extends ConversationMenu {
-    private final static int FONT_SIZE = 8;
+import java.util.List;
 
-    public ConversationUI(int windowID, Inventory inventory, AbstractHumanlikeEntity<?> entity) {
-        super(windowID, inventory, entity);
+public class ConversationUI {
+    private final Player player;
+    private final AbstractHumanlikeEntity<?> entity;
+
+    private UI ui;
+
+    private UIElement exitButtonElement;
+    private UIElement titleElement;
+    private UIElement contentElement;
+    private UIElement relationShipBarElement;
+    private List<UIElement> topicButtonElements;
+
+    public ConversationUI(Player player, AbstractHumanlikeEntity<?> entity) {
+        this.player = player;
+        this.entity = entity;
+
+        var xml = XmlUtils.loadXml(ResourceLocation.parse("rpgmobs:ui/conversation-ui/conversation-ui.xml"));
+
+        if (xml != null) {
+            ui = UI.of(xml);
+
+            exitButtonElement = ui.select("#button-exit").findFirst().orElseThrow();
+            titleElement = ui.select("#title").findFirst().orElseThrow();
+            contentElement = ui.select("#content").findFirst().orElseThrow();
+            relationShipBarElement = ui.select("#relationship-bar").findFirst().orElseThrow();
+            topicButtonElements = ui.select(".topic").toList();
+
+            registerTitleValues();
+            registerContentValues(getDefaultDialogue());
+            registerRelationshipBarValues();
+            registerExitButtonEvent();
+            registerTopicButtonEvent();
+
+        }
     }
 
-    public static ModularUI createModularUI(
-        Player player,
-        AbstractHumanlikeEntity<?> entity
-    ) {
-        var root = new UIElement()
-            .lss("width", "100%")
-            .lss("height", "100%")
-            .lss("padding-all", 10)
-            .lss("align-items", "center")
-            .lss("justify-content", "end");
-
-        var container = new UIElement()
-            .lss("display", "flex")
-            .lss("width", "85%")
-            .lss("height", "50%")
-            .lss("background", "built-in(ui-mc:RECT)")
-            .lss("padding-all", 10)
-            .lss("gap-all", 5)
-            .lss("font-size", FONT_SIZE);
-
-        var title = createTitle("Conversation with " + entity.getCustomName().getString());
-
-        var contentContainer = createContentContainer(entity);
-        var actionsContainer = createActionsContainer(entity);
-
-        var conversationContainer = new UIElement()
-            .lss("display", "flex")
-            .lss("flex-direction", "row")
-            .lss("flex", 1)
-            .lss("gap-all", 5)
-            .lss("background", "empty");
-
-        conversationContainer.addChildren(
-            contentContainer,
-            actionsContainer
-        );
-
-        container.addChildren(
-            title,
-            conversationContainer
-        );
-
-        root.addChild(container);
-
-        return ModularUI.of(UI.of(root), player);
+    public ModularUI createModularUI() {
+        return ModularUI.of(ui, player);
     }
 
-    private static UIElement createTitle(String title) {
-        return new Label().setText(title)
-            .textStyle(style -> style
-                .textAlignHorizontal(Horizontal.CENTER)
-                .textAlignVertical(Vertical.CENTER)
-            )
-            .lss("width", "100%")
-            .lss("align-items", "center")
-            .lss("justify-content", "center")
-            .lss("padding-all", 5)
-            .lss("font-size", FONT_SIZE);
+    private void registerExitButtonEvent() {
+        if (exitButtonElement instanceof Button exitButton) {
+            exitButton.setOnClick(event -> {
+                player.closeContainer();
+            });
+        }
     }
 
-    private static UIElement createContentContainer(AbstractHumanlikeEntity<?> entity) {
-        var contentContainer = new UIElement()
-            .lss("background", "empty")
-            .lss("flex", 1);
-
-        var contentScrollerView = new ScrollerView();
-
-        contentScrollerView
-            .lss("flex", 3)
-            .lss("height", "100%");
-
-        contentScrollerView.viewPort.lss("background", "built-in(ui-mc:BORDER)");
-        contentScrollerView.scrollerStyle(style -> style.mode(ScrollerMode.VERTICAL));
-
-        var decreaseButton = new Button().setText("-");
-        var increaseButton = new Button().setText("+");
-
-        decreaseButton.text.lss("font-size", FONT_SIZE);
-        increaseButton.text.lss("font-size", FONT_SIZE);
-
-        decreaseButton.setOnServerClick(event -> entity.setRelationship(entity.getRelationship() - 1));
-        increaseButton.setOnServerClick(event -> entity.setRelationship(entity.getRelationship() + 1));
-
-        var content = new Label().bindDataSource(SupplierDataSource.of(
-            () -> Component.literal("Relationship: ").append(String.valueOf(entity.getRelationship()))
-        )).lss("font-size", FONT_SIZE);
-
-
-        contentScrollerView.addScrollViewChildren(
-            content,
-            increaseButton,
-            decreaseButton
-        );
-
-        contentContainer.addChildren(contentScrollerView);
-
-        return contentScrollerView;
+    private void registerTitleValues() {
+        if (titleElement instanceof Label title) {
+            title.bindDataSource(SupplierDataSource.of(entity::getCustomName));
+        }
     }
 
-    private static UIElement createActionsContainer(AbstractHumanlikeEntity<?> entity) {
-        var actionsContainer = new UIElement()
-            .lss("background", "empty")
-            .lss("flex", 1);
+    private void registerContentValues(String text) {
+        if (contentElement instanceof Label content) {
+            content.setText(text);
+        }
+    }
 
-        var topicsScrollerView = new ScrollerView();
+    private void registerRelationshipBarValues() {
+        if (relationShipBarElement instanceof ProgressBar relationshipBar) {
+            relationshipBar.setMinValue(0);
+            relationshipBar.setMaxValue(100);
 
-        var relationshipBar = createRelationshipBar(entity);
-        var topicsContainer = new UIElement().lss("flex", 1);
-        var goodbyeButton = new Button().setText("Goodbye");
+            relationshipBar.label.bindDataSource(SupplierDataSource.of(
+                () -> Component.literal(String.valueOf(entity.getRelationship())).append("/100"))
+            );
+            relationshipBar.bindDataSource(SupplierDataSource.of(() -> (float) entity.getRelationship()));
+        }
+    }
 
-        goodbyeButton.text.lss("font-size", FONT_SIZE);
+    private void registerTopicButtonEvent() {
+        topicButtonElements.forEach(topicButtonElement -> {
+            if (topicButtonElement instanceof Button topicButton) {
+                RandomSource random = RandomSource.create();
 
-        goodbyeButton.setOnClick(event -> {
-            assert Minecraft.getInstance().player != null;
-            Minecraft.getInstance().player.closeContainer();
+                topicButton.setOnServerClick(event -> {
+                    RPGMobs.LOGGER.info("SERVER CLICK");
+
+                    if (random.nextBoolean()) {
+                        entity.setRelationship(entity.getRelationship() + 1);
+                    } else {
+                        entity.setRelationship(entity.getRelationship() - 1);
+                    }
+                });
+
+                topicButton.setOnClick(event -> {
+                    registerContentValues("You want to talk about " + topicButton.text.getText().getString() + "?");
+                });
+            }
         });
-
-        topicsScrollerView
-            .lss("flex", 1)
-            .lss("height", "100%")
-            .lss("display", "flex")
-            .lss("flex-direction", "column")
-            .lss("gap", 5);
-
-        topicsScrollerView.viewPort.lss("background", "built-in(ui-mc:BORDER)");
-
-        topicsScrollerView.scrollerStyle(style -> style.mode(ScrollerMode.VERTICAL));
-
-        topicsScrollerView.addScrollViewChild(topicsContainer);
-
-        actionsContainer.addChildren(
-            relationshipBar,
-            topicsContainer,
-            goodbyeButton
-        );
-
-        return actionsContainer;
     }
 
-    private static UIElement createRelationshipBar(AbstractHumanlikeEntity<?> entity) {
-        var relationshipContainer = new UIElement()
-            .lss("background", "empty")
-            .lss("display", "flex")
-            .lss("flex-direction", "row")
-            .lss("gap-all", 2)
-            .lss("width", "100%");
-
-        var relationshipBar = new ProgressBar();
-
-        relationshipBar.lss("flex", 1);
-
-        relationshipBar.setMaxValue(100);
-        relationshipBar.setMinValue(0);
-
-        relationshipBar.label.textStyle(textStyle -> textStyle.fontSize(6));
-
-        relationshipBar.label.bindDataSource(SupplierDataSource.of(
-            () -> Component.literal(String.valueOf(entity.getRelationship())).append("/100"))
-        );
-        relationshipBar.bindDataSource(SupplierDataSource.of(() -> (float) entity.getRelationship()));
-
-        relationshipContainer.addChildren(
-            relationshipBar
-        );
-
-        return relationshipContainer;
+    private String getDefaultDialogue() {
+        return (Component
+            .literal("Hello ")
+            .append(player.getName())
+            .append(", my name is ")
+            .append((entity.getCustomName() != null ? entity.getCustomName().getString() : "not important"))
+            .append(".").getString());
     }
 }

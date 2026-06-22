@@ -1,0 +1,38 @@
+[
+    {
+        "id": "rumor_herobrine_dwarf",
+        "topicID": "rumors",
+        "text": "I heard rumors of a strange bloke roaming around. They say his eyes are white, like two marbles. They call him Herobrine.",
+        "conditions": {
+            "tags": [
+                "dwarf"
+            ],
+            "relationship": {
+                "min": 50,
+                "max": 100
+            }
+        },
+        "unlocks": [
+            "herobrine"
+        ],
+        "relationshipModifier": 1
+    },
+    {
+        "id": "rumor_herobrine_human",
+        "topicID": "rumors",
+        "text": "I heard rumors of a suspicious man in these parts. Apparently there is something wrong with his eyes. They call him Herobrine.",
+        "conditions": {
+            "tags": [
+                "human"
+            ],
+            "relationship": {
+                "min": 50,
+                "max": 100
+            }
+        },
+        "unlocks": [
+            "herobrine"
+        ],
+        "relationshipModifier": 1
+    }
+]

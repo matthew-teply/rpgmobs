@@ -48,11 +48,11 @@ public abstract class AbstractCombatantEntity<T extends AbstractCombatantEntity<
 
         idleTasks.getBehaviours().addFirst(
             new TargetOrRetaliate<>()
-                .attackablePredicate(entity -> this.factionService.isEnemyFaction(entity) || entity.getLastHurtMob() == this)
-                .isAllyIf((mob, entity) -> this.factionService.isAllyFaction(entity))
+                .attackablePredicate(entity -> this.factionManager.isEnemyFaction(entity) || entity.getLastHurtMob() == this)
+                .isAllyIf((mob, entity) -> this.factionManager.isAllyFaction(entity))
                 .alertAlliesWhen((mob, entity) ->
                     entity instanceof LivingEntity livingTarget && (
-                        this.factionService.isEnemyFaction(livingTarget) || livingTarget.getLastHurtMob() == this
+                        this.factionManager.isEnemyFaction(livingTarget) || livingTarget.getLastHurtMob() == this
                     )
                 )
         );

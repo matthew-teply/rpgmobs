@@ -19,7 +19,7 @@ public class ProjectileCollisionHandler {
         }
 
         if (event.getRayTraceResult().getType() == HitResult.Type.ENTITY) {
-            EntityHitResult entityHitResult = (EntityHitResult)event.getRayTraceResult();
+            EntityHitResult entityHitResult = (EntityHitResult) event.getRayTraceResult();
 
             Entity victim = entityHitResult.getEntity();
             Entity shooter = arrow.getOwner();
@@ -34,7 +34,7 @@ public class ProjectileCollisionHandler {
 
             if (
                 combatantEntity.getTarget() != victimLivingEntity &&
-                !combatantEntity.factionService.isEnemyFaction(victimLivingEntity)
+                    !combatantEntity.factionManager.isEnemyFaction(victimLivingEntity)
             ) {
                 event.setCanceled(true);
             }

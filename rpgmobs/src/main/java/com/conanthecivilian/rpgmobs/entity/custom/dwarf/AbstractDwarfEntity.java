@@ -15,10 +15,10 @@ public abstract class AbstractDwarfEntity<T extends AbstractDwarfEntity<T>> exte
     public AbstractDwarfEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
-        this.factionService.addEnemyFactions(this.getEnemyList());
+        this.factionManager.addEnemyFactions(this.getEnemyList());
 
-        this.factionService.addAllyFaction(IDwarfFaction.class);
-        this.factionService.addAllyFaction(IHumanFaction.class);
+        this.factionManager.addAllyFaction(IDwarfFaction.class);
+        this.factionManager.addAllyFaction(IHumanFaction.class);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
