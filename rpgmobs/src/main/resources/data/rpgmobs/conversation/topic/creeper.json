@@ -1,0 +1,7 @@
+{
+    "id": "rpgmobs:creeper",
+    "name": "Creeper",
+    "dialogue_ids": [
+        "rpgmobs:mob_creeper"
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "id": "rpgmobs:rumors",
+    "name": "Rumors",
+    "dialogue_ids": [
+        "rpgmobs:rumor_herobrine",
+        "rpgmobs:rumor_creeper"
+    ]
+}

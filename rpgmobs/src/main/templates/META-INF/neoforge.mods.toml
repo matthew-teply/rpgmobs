@@ -100,3 +100,7 @@ Adds randomly spawning RPG mobs to the world. A tribute to the fantastic RPG Mob
 # stop your mod loading on the server for example.
 #[features.${mod_id}]
 #openGLVersion="[3.2,)"
+
+# Tell NeoForge to hook your mixin config into the game launch arguments
+[[mixins]]
+config = "mixins.rpgmobs.json"

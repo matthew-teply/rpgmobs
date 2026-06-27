@@ -15,6 +15,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -40,6 +41,7 @@ public class RPGMobs {
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENUS.register(modEventBus);
+        ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (RPGMobs) to respond directly to events.
@@ -77,7 +79,7 @@ public class RPGMobs {
         }
 
         @SubscribeEvent
-        public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+        public static void registerScreens(RegisterMenuScreensEvent event) {
             ModMenuTypes.registerScreens(event);
         }
     }

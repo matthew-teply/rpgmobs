@@ -1,0 +1,15 @@
+{
+    "name": "slaying",
+    "parameters": {
+        "year": "int",
+        "slayer": "Character",
+        "slayer_death_method": "String",
+        "victim": "Character",
+        "victim_death_method": "String",
+        "artifact": "Artifact"
+    },
+    "templates": {
+        "Success": "In the {year}, {slayer} was {victim_death_method} {victim} in an epic battle, using his {artifact}.",
+        "fail": "{slayer} was {slayer_death_method} by {victim} after attempting to slay them in the year {year}."
+    }
+}

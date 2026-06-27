@@ -1,11 +1,18 @@
 package com.conanthecivilian.rpgmobs.entity.custom;
 
+import com.conanthecivilian.rpgmobs.ModAttachments;
 import com.conanthecivilian.rpgmobs.RPGMobs;
+import com.conanthecivilian.rpgmobs.accessor.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationRepository;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationDialogue;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationTopic;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.UnlockedConversationTopics;
 import com.conanthecivilian.rpgmobs.manager.FactionManager.FactionManager;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.syncdata.annotation.RPCMethod;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -57,20 +64,53 @@ import java.util.List;
 public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<T>> extends PathfinderMob implements
     IHumanLike,
     SmartBrainOwner<T>,
-    IContainerUIHolder {
+    IContainerUIHolder,
+    IConversationTopicsAccessor {
+
     protected AbstractHumanlikeEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
 
         this.setCustomName(Component.literal(String.valueOf(this.getId())));
+
+        this.setData(
+            ModAttachments.ENTITY_UNLOCKED_CONVERSATION_TOPICS.get(),
+            new UnlockedConversationTopics(this)
+        );
     }
 
     private static final EntityDataAccessor<Integer> RELATIONSHIP = SynchedEntityData.defineId(AbstractHumanlikeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> CURRENT_DIALOGUE_TEXT = SynchedEntityData.defineId(AbstractHumanlikeEntity.class, EntityDataSerializers.STRING);
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
 
         builder.define(RELATIONSHIP, 0);
+        builder.define(CURRENT_DIALOGUE_TEXT, "");
+    }
+
+    @Override
+    public List<ResourceLocation> getDefaultConversationTopics() {
+        return List.of(
+            ResourceLocation.fromNamespaceAndPath("rpgmobs", "rumors"),
+            ResourceLocation.fromNamespaceAndPath("rpgmobs", "creeper")
+            //ResourceLocation.parse("faction"),
+            //ResourceLocation.parse("this_is_hidden")
+        );
+    }
+
+    @Override
+    public List<ConversationTopic> getConversationTopics() {
+        return this
+            .getData(ModAttachments.ENTITY_UNLOCKED_CONVERSATION_TOPICS.get())
+            .unlockedTopics()
+            .stream()
+            .map(ConversationRepository::getTopic)
+            .toList();
+    }
+
+    @Override
+    public void unlockConversationTopics(ResourceLocation topicId) {
     }
 
     public enum HumanlikeArmPose {
@@ -104,6 +144,16 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         return this.entityData.get(RELATIONSHIP);
     }
 
+    @RPCMethod
+    public void setCurrentDialogueText(String dialogueId) {
+        this.entityData.set(CURRENT_DIALOGUE_TEXT, dialogueId);
+    }
+
+    @RPCMethod
+    public String getCurrentDialogueText() {
+        return this.entityData.get(CURRENT_DIALOGUE_TEXT);
+    }
+
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
@@ -111,6 +161,16 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    public ConversationDialogue selectRandomDialogue(ConversationTopic conversationTopic) {
+        int randomTopicIndex = RandomSource.create().nextIntBetweenInclusive(
+            0,
+            conversationTopic.getDialogueIds().size() - 1
+        );
+
+        List<ConversationDialogue> dialogues = ConversationRepository.getTopicDialogues(conversationTopic.getId());
+        return dialogues.get(randomTopicIndex);
     }
 
     @Override

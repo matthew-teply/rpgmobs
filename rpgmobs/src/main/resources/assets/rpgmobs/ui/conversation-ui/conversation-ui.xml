@@ -38,7 +38,7 @@
         }
 
         .label {
-        color: #FF444444;
+        color: #FFFFFFFF;
         text-shadow: false;
         }
 
@@ -47,7 +47,7 @@
         width: 90%;
         height: 50%;
         min-height: 200;
-        background: built-in(ui-mc:RECT_THIN);
+        background: built-in(ui-mc:BORDER);
         }
 
         .title-container {
@@ -79,17 +79,34 @@
         .content-container {
         scroller-view-mode: VERTICAL;
 
+        position: relative;
         flex: 3;
         background: built-in(ui-mc:BORDER);
         height: 100%;
         padding-all: 10;
         }
 
+        .content {
+        width: 100%;
+        text-wrap: WRAP;
+        }
+
+        .content-loader {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: #FF0000;
+        width: 100%;
+        height: 100%;
+        }
+
         .actions-container {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap-all: 8;
+        gap-all: 5;
         }
 
         .topics-container {
@@ -103,7 +120,7 @@
         padding-bottom: 4;
         }
 
-        .topic {
+        .topics-container button {
         base-background: empty;
         hover-background: #55000000;
         pressed-background: empty;
@@ -115,7 +132,7 @@
         height: auto;
         }
 
-        .topic > text:internal {
+        .topics-container button > text:internal {
         font-size: 8;
         color: #FF44AAFF;
         adaptive-height: true;
@@ -128,13 +145,17 @@
                 <element style="flex: 1;">
                 </element>
                 <label id="title" class="title font-standard">Jeff - Human Guard</label>
-                <element style="flex: 1;">b</element>
+                <element style="flex: 1;">
+                </element>
             </element>
 
             <element class="body-container">
                 <scroller-view class="content-container">
-                    <label id="content" class="font-standard">
+                    <label id="content" class="content font-standard">
                     </label>
+                    <element class="content-loader">
+                        <label>Let me think...</label>
+                    </element>
                 </scroller-view>
 
                 <element class="actions-container">
@@ -146,13 +167,7 @@
 
                     <element style="flex: 1;">
                         <label class="label font-small">Topics</label>
-                        <scroller-view class="topics-container">
-                            <button class="topic font-standard" text="Rumors"/>
-                            <button class="topic font-standard" text="Faction"/>
-                            <button class="topic font-standard" text="Nearby enemies"/>
-                            <button class="topic font-standard" text="Nearby structures"/>
-                            <button class="topic font-standard" text="Nearby ores"/>
-                            <button class="topic font-standard" text="Nearby allies"/>
+                        <scroller-view id="topics-container" class="topics-container">
                         </scroller-view>
                     </element>
 
