@@ -26,8 +26,8 @@ public class ConversationMenu extends ModularUIContainerMenu {
     /**
      * Opens conversation menu between the player on the server and an entity
      *
-     * @param player - Server player to initiate the conversation for
-     * @param entity - The entity that the player is holding a conversation with
+     * @param player Server player to initiate the conversation for
+     * @param entity The entity that the player is holding a conversation with
      */
     public static void open(ServerPlayer player, AbstractHumanlikeEntity<?> entity) {
         player.openMenu(
@@ -40,12 +40,12 @@ public class ConversationMenu extends ModularUIContainerMenu {
      * Builds a client-side menu type, determines how to get the entity on client-side
      */
     public static MenuType<ModularUIContainerMenu> getMenuType() {
-        return IMenuTypeExtension.create((windowID, inventory, data) -> {
+        return IMenuTypeExtension.create((windowId, inventory, data) -> {
             int entityId = data.readInt();
             Entity entity = inventory.player.level().getEntity(entityId);
 
             if (entity instanceof AbstractHumanlikeEntity<?> humanlikeEntity) {
-                return new ConversationMenu(windowID, inventory, humanlikeEntity);
+                return new ConversationMenu(windowId, inventory, humanlikeEntity);
             }
 
             throw new Error("Conversation entity not found");

@@ -1,6 +1,7 @@
 {
     "id": "rpgmobs:rumor_creeper",
-    "content": "What did you say? A green four-legged creature that explodes on contact? I think you might be a going a bit loony.",
+    "content": "What did you say? Some sort of a green four-legged [creeper](rpgmobs:creeper) that explodes on contact? I think you might be a going a bit loony.\n\nNow if you want real [rumors](rpgmobs:rumors), I have those.",
+    "question": "I heard there is a four-legged explosive creature roaming about.",
     "unlocked_topic_ids": [
         "rpgmobs:creeper"
     ]

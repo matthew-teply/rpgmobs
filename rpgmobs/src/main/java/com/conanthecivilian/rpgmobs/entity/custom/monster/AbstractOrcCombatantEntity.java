@@ -2,6 +2,7 @@ package com.conanthecivilian.rpgmobs.entity.custom.monster;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.custom.AbstractCombatantEntity;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractOrcCombatantEntity<T extends AbstractOrcCombatantEntity<T>> extends AbstractCombatantEntity<T> implements IMonsterFaction {
     public AbstractOrcCombatantEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -34,5 +36,10 @@ public abstract class AbstractOrcCombatantEntity<T extends AbstractOrcCombatantE
     @Override
     public ResourceLocation getTextureLocation() {
         return ResourceLocation.fromNamespaceAndPath(RPGMobs.MODID, "textures/entity/orc/orc.png");
+    }
+
+    @Override
+    public @NotNull Component getName() {
+        return Component.translatable("Orc");
     }
 }

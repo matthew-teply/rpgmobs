@@ -3,20 +3,21 @@ package com.conanthecivilian.rpgmobs.entity.custom;
 import com.conanthecivilian.rpgmobs.ModAttachments;
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.accessor.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationRepository;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationDialogue;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationDenialReason;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationTopic;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.UnlockedConversationTopics;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.repository.ConversationRepository;
 import com.conanthecivilian.rpgmobs.manager.FactionManager.FactionManager;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
-import com.lowdragmc.lowdraglib2.syncdata.annotation.RPCMethod;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -33,6 +34,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -79,21 +81,20 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
     }
 
     private static final EntityDataAccessor<Integer> RELATIONSHIP = SynchedEntityData.defineId(AbstractHumanlikeEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<String> CURRENT_DIALOGUE_TEXT = SynchedEntityData.defineId(AbstractHumanlikeEntity.class, EntityDataSerializers.STRING);
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
 
         builder.define(RELATIONSHIP, 0);
-        builder.define(CURRENT_DIALOGUE_TEXT, "");
     }
 
     @Override
     public List<ResourceLocation> getDefaultConversationTopics() {
         return List.of(
-            ResourceLocation.fromNamespaceAndPath("rpgmobs", "rumors"),
-            ResourceLocation.fromNamespaceAndPath("rpgmobs", "creeper")
+            ResourceLocation.parse("rpgmobs:rumors"),
+            ResourceLocation.parse("rpgmobs:nearby_enemies"),
+            ResourceLocation.parse("rpgmobs:creeper")
             //ResourceLocation.parse("faction"),
             //ResourceLocation.parse("this_is_hidden")
         );
@@ -144,33 +145,20 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         return this.entityData.get(RELATIONSHIP);
     }
 
-    @RPCMethod
-    public void setCurrentDialogueText(String dialogueId) {
-        this.entityData.set(CURRENT_DIALOGUE_TEXT, dialogueId);
-    }
-
-    @RPCMethod
-    public String getCurrentDialogueText() {
-        return this.entityData.get(CURRENT_DIALOGUE_TEXT);
-    }
-
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
+            if (!this.canHoldConversation(player)) {
+                this.tellPlayerConversationDenialReason(player);
+                return InteractionResult.FAIL;
+            }
+
             ConversationMenu.open(serverPlayer, this);
+
+            return InteractionResult.SUCCESS;
         }
 
-        return InteractionResult.SUCCESS;
-    }
-
-    public ConversationDialogue selectRandomDialogue(ConversationTopic conversationTopic) {
-        int randomTopicIndex = RandomSource.create().nextIntBetweenInclusive(
-            0,
-            conversationTopic.getDialogueIds().size() - 1
-        );
-
-        List<ConversationDialogue> dialogues = ConversationRepository.getTopicDialogues(conversationTopic.getId());
-        return dialogues.get(randomTopicIndex);
+        return InteractionResult.FAIL;
     }
 
     @Override
@@ -180,9 +168,52 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         return conversationUI.createModularUI();
     }
 
+    public void tellPlayerConversationDenialReason(Player player) {
+        MutableComponent denialMessage = Component.literal(this.getName().getString() + ": ")
+            .withStyle(ChatFormatting.WHITE);
+
+        switch (this.getConversationDenialReason(player)) {
+            case ATTACKING -> denialMessage.append(
+                Component.literal("I am busy fighting this " + this.getTarget().getName().getString() + "!")
+                    .withStyle(ChatFormatting.YELLOW)
+            );
+            case PLAYER_ENEMY -> denialMessage.append(
+                Component.literal("You are my enemy!")
+                    .withStyle(ChatFormatting.YELLOW)
+            );
+            default -> {
+                return;
+            }
+        }
+
+        player.sendSystemMessage(denialMessage);
+    }
+
+    public ConversationDenialReason getConversationDenialReason(Player player) {
+        if (this.dead) {
+            return ConversationDenialReason.DEAD;
+        }
+
+        if (this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).isPresent()) {
+            return ConversationDenialReason.ATTACKING;
+        }
+
+        if (this.factionManager.isEnemyFaction(player)) {
+            return ConversationDenialReason.PLAYER_ENEMY;
+        }
+
+        return ConversationDenialReason.NONE;
+    }
+
+    public boolean canHoldConversation(@NotNull Player player) {
+        return this.getConversationDenialReason(player) == ConversationDenialReason.NONE;
+    }
+
     @Override
     public boolean isStillValid(@NotNull Player player) {
-        return !this.dead;
+        this.tellPlayerConversationDenialReason(player);
+
+        return this.canHoldConversation(player);
     }
 
     public HumanlikeArmPose getArmPose() {
@@ -225,14 +256,14 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
 
     @Override
     protected void customServerAiStep() {
-        tickBrain((T) this);
+        this.tickBrain((T) this);
     }
 
     @Override
     public List<ExtendedSensor<T>> getSensors() {
         return ObjectArrayList.of(
-            new NearbyLivingEntitySensor<>(), // This tracks nearby entities
-            new HurtBySensor<>()              // This tracks the last damage source and attacker
+            new NearbyLivingEntitySensor<>(),
+            new HurtBySensor<>()
         );
     }
 
@@ -250,11 +281,11 @@ public abstract class AbstractHumanlikeEntity<T extends AbstractHumanlikeEntity<
         return BrainActivityGroup.idleTasks(
             new FirstApplicableBehaviour<T>(
                 new SetPlayerLookTarget<>(),
+                new OneRandomBehaviour<T>(
+                    new SetRandomWalkTarget<>(),
+                    new Idle<>().runFor(entity -> entity.getRandom().nextInt(30, 60))
+                ),
                 new SetRandomLookTarget<>()
-            ),
-            new OneRandomBehaviour<T>(
-                new SetRandomWalkTarget<>(),
-                new Idle<>().runFor(entity -> entity.getRandom().nextInt(30, 60))
             )
         );
     }

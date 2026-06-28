@@ -1,0 +1,9 @@
+{
+    "id": "rpgmobs:common_nearby_enemies_2",
+    "content": "Spotted {enemies_list} not so long ago.",
+    "hydrators": [
+        "rpgmobs:conversation_hydrator_nearby_enemies"
+    ],
+    "fallback": "I have not seen anyone.",
+    "unlocked_topic_ids": []
+}

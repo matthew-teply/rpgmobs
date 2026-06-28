@@ -1,6 +1,7 @@
 {
     "id": "rpgmobs:rumors",
     "name": "Rumors",
+    "question": "Have you heard any rumors?",
     "dialogue_ids": [
         "rpgmobs:rumor_herobrine",
         "rpgmobs:rumor_creeper"

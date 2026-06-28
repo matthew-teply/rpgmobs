@@ -62,10 +62,10 @@ public abstract class AbstractCombatantEntity<T extends AbstractCombatantEntity<
     }
 
     @Override
-    public BrainActivityGroup<T> getFightTasks() { // These are the tasks that handle fighting
+    public BrainActivityGroup<T> getFightTasks() {
         return BrainActivityGroup.fightTasks(
-            new InvalidateAttackTarget<>(),      // Cancel fighting if the target is no longer valid
-            new SetWalkTargetToAttackTarget<>(), // Set the walk target to the attack target
+            new InvalidateAttackTarget<>(),
+            new SetWalkTargetToAttackTarget<>(),
             new BowAttack<>(20).startCondition(
                 entity -> entity.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof BowItem
             ),

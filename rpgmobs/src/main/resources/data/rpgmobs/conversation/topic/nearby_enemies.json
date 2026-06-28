@@ -1,0 +1,10 @@
+{
+    "id": "rpgmobs:nearby_enemies",
+    "name": "Nearby enemies",
+    "question": "Have you seen any enemies nearby?",
+    "dialogue_ids": [
+        "rpgmobs:common_nearby_enemies_1",
+        "rpgmobs:common_nearby_enemies_2",
+        "rpgmobs:common_nearby_enemies_3"
+    ]
+}

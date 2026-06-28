@@ -2,9 +2,9 @@ package com.conanthecivilian.rpgmobs.mixin.PlayerMixin;
 
 import com.conanthecivilian.rpgmobs.ModAttachments;
 import com.conanthecivilian.rpgmobs.accessor.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationRepository;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationTopic;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.UnlockedConversationTopics;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.repository.ConversationRepository;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +16,8 @@ import java.util.List;
 public abstract class PlayerMixin implements IConversationTopicsAccessor {
     public List<ResourceLocation> getDefaultConversationTopics() {
         return List.of(
-            ResourceLocation.fromNamespaceAndPath("rpgmobs", "rumors")
+            ResourceLocation.fromNamespaceAndPath("rpgmobs", "rumors"),
+            ResourceLocation.parse("rpgmobs:nearby_enemies")
             //ResourceLocation.parse("faction")
         );
     }

@@ -1,14 +1,12 @@
 package com.conanthecivilian.rpgmobs.manager.ConversationManager;
 
-import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
-import net.minecraft.world.entity.player.Player;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.DefaultConversationHydrator;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.NearbyEnemiesConversationHydrator;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.repository.ConversationHydratorRepository;
 
 public class ConversationManager {
-    private final Player player;
-    private final AbstractHumanlikeEntity<?> entity;
-
-    public ConversationManager(Player player, AbstractHumanlikeEntity<?> entity) {
-        this.player = player;
-        this.entity = entity;
+    public static void registerHydrators() {
+        ConversationHydratorRepository.register(new DefaultConversationHydrator());
+        ConversationHydratorRepository.register(new NearbyEnemiesConversationHydrator());
     }
 }

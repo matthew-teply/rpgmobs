@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Creeper;
 
 import java.util.ArrayList;
 
@@ -38,7 +39,7 @@ public class FactionManager {
     }
 
     public boolean isEnemyFaction(LivingEntity entity) {
-        if (entity == null) return false;
+        if (entity == null || entity instanceof Creeper) return false;
 
         return enemyFactions.stream().anyMatch(enemyClass -> enemyClass.isAssignableFrom(entity.getClass()));
     }

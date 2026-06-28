@@ -14,8 +14,6 @@ import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 public class ModSpawnPlacements {
     @SubscribeEvent
     public static void onRegisterSpawnPlacements(RegisterSpawnPlacementsEvent event) {
-        RPGMobs.LOGGER.info("⚔️ RPGMOBS: Registering spawn placements event has been reached! ⚔️");
-
         event.register(
             ModEntities.HUMAN_GUARD.get(),
             SpawnPlacementTypes.ON_GROUND,

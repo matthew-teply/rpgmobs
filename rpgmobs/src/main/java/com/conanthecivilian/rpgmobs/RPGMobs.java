@@ -2,6 +2,7 @@ package com.conanthecivilian.rpgmobs;
 
 import com.conanthecivilian.rpgmobs.entity.ModEntities;
 import com.conanthecivilian.rpgmobs.item.ModItems;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationManager;
 import com.conanthecivilian.rpgmobs.screen.ModMenuTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -42,6 +43,8 @@ public class RPGMobs {
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENUS.register(modEventBus);
         ModAttachments.ATTACHMENT_TYPES.register(modEventBus);
+
+        ConversationManager.registerHydrators();
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (RPGMobs) to respond directly to events.
