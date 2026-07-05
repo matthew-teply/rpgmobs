@@ -1,5 +1,6 @@
 {
     "id": "rpgmobs:rumor_herobrine",
     "content": "I heard rumors of a suspicious man in these parts. Apparently there is something wrong with his eyes.",
-    "unlocked_topic_ids": []
+    "unlocked_topic_ids": [],
+    "tags": []
 }

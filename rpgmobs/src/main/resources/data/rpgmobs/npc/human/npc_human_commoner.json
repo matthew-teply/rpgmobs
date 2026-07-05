@@ -1,0 +1,30 @@
+{
+    "id": "rpgmobs:npc_human_commoner",
+    "race": "rpgmobs:race_human",
+    "attributes": {
+        "movement_speed": 0.35,
+        "max_health": 24.0,
+        "attack_damage": 5.0,
+        "follow_range": 32.0
+    },
+    "spawn": {
+        "base_chance": 0.2,
+        "weight": 20,
+        "conditions": {
+            "y": {
+                "min": {
+                    "absolute": 63
+                },
+                "max": {
+                    "absolute": 127
+                }
+            }
+        },
+        "multipliers": {
+            "structures": {
+                "minecraft:village": 2,
+                "minecraft:mineshaft": 0
+            }
+        }
+    }
+}

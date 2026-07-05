@@ -1,12 +1,12 @@
 package com.conanthecivilian.rpgmobs.screen.custom.conversation;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.accessor.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationDialogue;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.ConversationTopic;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.repository.ConversationHydratorRepository;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.repository.ConversationRepository;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogue;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
+import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
 import com.conanthecivilian.rpgmobs.screen.custom.ConversationMDParser;
 import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.SupplierDataSource;
 import com.lowdragmc.lowdraglib2.gui.sync.rpc.RPCEmitter;
@@ -28,7 +28,7 @@ import java.util.Optional;
 
 public class ConversationUI {
     private final Player player;
-    private final AbstractHumanlikeEntity<?> entity;
+    private final AbstractNPCEntity<?> entity;
 
     private UI ui;
 
@@ -43,7 +43,7 @@ public class ConversationUI {
     private RPCEmitter conversationRefreshEmitter;
     private RPCEmitter clientTopicBridgeEmitter;
 
-    public ConversationUI(Player player, AbstractHumanlikeEntity<?> entity) {
+    public ConversationUI(Player player, AbstractNPCEntity<?> entity) {
         this.player = player;
         this.entity = entity;
 
@@ -104,6 +104,10 @@ public class ConversationUI {
         List<ConversationTopic> playerTopics = conversationPlayer.getConversationTopics();
 
         entityTopics.forEach(entityTopic -> {
+            if (entityTopic == null) {
+                return;
+            }
+
             Button topicButton = new Button();
 
             topicButton.setClasses("topic");

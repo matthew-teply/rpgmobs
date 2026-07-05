@@ -1,6 +1,6 @@
 package com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator;
 
-import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -12,7 +12,7 @@ public class DefaultConversationHydrator implements IConversationHydrator {
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{([^}]+)}");
 
     @Override
-    public String hydrate(Player player, AbstractHumanlikeEntity<?> entity, String rawText) {
+    public String hydrate(Player player, AbstractNPCEntity<?> entity, String rawText) {
         if (rawText == null || rawText.isBlank()) {
             return null;
         }

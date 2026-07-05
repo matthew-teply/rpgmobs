@@ -1,6 +1,6 @@
 package com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator;
 
-import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -15,7 +15,7 @@ public class NearbyEnemiesConversationHydrator implements IConversationHydrator 
     private static final String HYDRATION_ELEMENT = "{enemies_list}";
 
     @Override
-    public String hydrate(Player player, AbstractHumanlikeEntity<?> entity, String rawText) {
+    public String hydrate(Player player, AbstractNPCEntity<?> entity, String rawText) {
         List<LivingEntity> nearestHostiles = entity
             .getBrain()
             .getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES)

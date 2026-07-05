@@ -1,6 +1,6 @@
 package com.conanthecivilian.rpgmobs.screen.custom.conversation;
 
-import com.conanthecivilian.rpgmobs.entity.custom.AbstractHumanlikeEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
 import com.conanthecivilian.rpgmobs.screen.ModMenuTypes;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import net.minecraft.network.chat.Component;
@@ -12,11 +12,11 @@ import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 
 public class ConversationMenu extends ModularUIContainerMenu {
-    public ConversationMenu(int windowID, Inventory inventory, AbstractHumanlikeEntity<?> entity) {
+    public ConversationMenu(int windowID, Inventory inventory, AbstractNPCEntity<?> entity) {
         super(ModMenuTypes.CONVERSATION_MENU.get(), windowID, inventory, entity);
     }
 
-    private static SimpleMenuProvider getMenuProvider(AbstractHumanlikeEntity<?> entity) {
+    private static SimpleMenuProvider getMenuProvider(AbstractNPCEntity<?> entity) {
         return new SimpleMenuProvider(
             (windowId, playerInventory, p) -> new ConversationMenu(windowId, playerInventory, entity),
             Component.literal("Conversation")
@@ -29,7 +29,7 @@ public class ConversationMenu extends ModularUIContainerMenu {
      * @param player Server player to initiate the conversation for
      * @param entity The entity that the player is holding a conversation with
      */
-    public static void open(ServerPlayer player, AbstractHumanlikeEntity<?> entity) {
+    public static void open(ServerPlayer player, AbstractNPCEntity<?> entity) {
         player.openMenu(
             ConversationMenu.getMenuProvider(entity),
             buf -> buf.writeInt(entity.getId())
@@ -44,7 +44,7 @@ public class ConversationMenu extends ModularUIContainerMenu {
             int entityId = data.readInt();
             Entity entity = inventory.player.level().getEntity(entityId);
 
-            if (entity instanceof AbstractHumanlikeEntity<?> humanlikeEntity) {
+            if (entity instanceof AbstractNPCEntity<?> humanlikeEntity) {
                 return new ConversationMenu(windowId, inventory, humanlikeEntity);
             }
 

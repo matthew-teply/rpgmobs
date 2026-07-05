@@ -1,9 +1,9 @@
 package com.conanthecivilian.rpgmobs.command;
 
-import com.conanthecivilian.rpgmobs.ModAttachments;
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.accessor.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.manager.ConversationManager.record.UnlockedConversationTopics;
+import com.conanthecivilian.rpgmobs.entity.ModAttachments;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.UnlockedConversationTopics;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
