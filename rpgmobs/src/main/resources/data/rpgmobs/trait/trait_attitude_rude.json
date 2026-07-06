@@ -1,0 +1,10 @@
+{
+    "id": "rpgmobs:trait_attitude_rude",
+    "label": "Rude",
+    "weight": 20,
+    "category": "attitude",
+    "type": [
+        "npc",
+        "dialogue"
+    ]
+}

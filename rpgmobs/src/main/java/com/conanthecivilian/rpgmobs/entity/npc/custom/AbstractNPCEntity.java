@@ -2,15 +2,22 @@ package com.conanthecivilian.rpgmobs.entity.npc.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.ModAttachments;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.AttachedConversationTopicsEntity;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
 import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.UnlockedConversationTopics;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.data.NPCData;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.template.NPCTemplate;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.data.NPCDataEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.template.NPCTemplateEntity;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.AttachedTraitsEntity;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.ITraitHolder;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.TraitEntity;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationDenialReason;
 import com.conanthecivilian.rpgmobs.manager.FactionManager.FactionManager;
 import com.conanthecivilian.rpgmobs.manager.NPCSpawnManager.NPCSpawnManager;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitManager;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitDatabaseRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
@@ -18,6 +25,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -28,6 +36,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -35,8 +44,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.monster.CrossbowAttackMob;
+import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -59,16 +72,26 @@ import net.tslat.smartbrainlib.api.core.sensor.vanilla.NearbyLivingEntitySensor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Predicate;
 
 public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends PathfinderMob implements
     INPCEntity,
+    RangedAttackMob,
+    CrossbowAttackMob,
     SmartBrainOwner<T>,
     IContainerUIHolder,
-    IConversationTopicsAccessor {
+    IConversationTopicsAccessor,
+    ITraitHolder {
 
     private static final EntityDataAccessor<Integer> RELATIONSHIP = SynchedEntityData.defineId(AbstractNPCEntity.class, EntityDataSerializers.INT);
+
+    private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(
+        AbstractNPCEntity.class,
+        EntityDataSerializers.BOOLEAN
+    );
 
     public FactionManager factionManager = new FactionManager();
     public HashMap<EquipmentSlot, ItemStack> equipment = new HashMap<>();
@@ -87,7 +110,7 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
 
         this.setData(
             ModAttachments.NPC_TOPICS.get(),
-            new UnlockedConversationTopics(this)
+            new AttachedConversationTopicsEntity(this)
         );
     }
 
@@ -96,6 +119,7 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         super.defineSynchedData(builder);
 
         builder.define(RELATIONSHIP, 0);
+        builder.define(IS_CHARGING_CROSSBOW, false);
     }
 
     @Override
@@ -108,10 +132,10 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
     }
 
     @Override
-    public List<ConversationTopic> getConversationTopics() {
+    public List<ConversationTopicEntity> getConversationTopics() {
         return this
             .getData(ModAttachments.NPC_TOPICS.get())
-            .unlockedTopics()
+            .topics()
             .stream()
             .map(ConversationRepository::getTopic)
             .toList();
@@ -136,6 +160,8 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
     @Override
     public @NotNull InteractionResult mobInteract(@NotNull Player player, @NotNull InteractionHand hand) {
         if (player instanceof ServerPlayer serverPlayer) {
+            RPGMobs.LOGGER.info(this.getData(ModAttachments.NPC_TRAITS).toString());
+
             if (!this.canHoldConversation(player)) {
                 this.tellPlayerConversationDenialReason(player);
                 return InteractionResult.FAIL;
@@ -208,10 +234,6 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         return this.canHoldConversation(player);
     }
 
-    public HumanlikeArmPose getArmPose() {
-        return HumanlikeArmPose.NEUTRAL;
-    }
-
     public void aiStep() {
         this.updateSwingTime();
         super.aiStep();
@@ -232,12 +254,12 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         BlockPos pos,
         RandomSource random
     ) {
-        RPGMobs.LOGGER.info("Evaluating spawn for {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
+        // RPGMobs.LOGGER.info("Evaluating spawn for {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
 
-        List<NPCTemplate> viableTemplates = NPCSpawnManager.getViableTemplates(level, pos);
+        List<NPCTemplateEntity> viableTemplates = NPCSpawnManager.getViableTemplates(level, pos);
 
         if (viableTemplates.isEmpty()) {
-            RPGMobs.LOGGER.info("No viable template found for {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
+            // RPGMobs.LOGGER.info("No viable template found for {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
             return false;
         }
 
@@ -245,7 +267,7 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         boolean shouldSpawn = random.nextFloat() < spawnChance;
 
         if (!shouldSpawn) {
-            RPGMobs.LOGGER.info("Random chance determined not to spawn {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
+            // RPGMobs.LOGGER.info("Random chance determined not to spawn {} at [{} {} {}]", npc.getDescriptionId(), pos.getX(), pos.getY(), pos.getZ());
             return false;
         }
 
@@ -331,6 +353,63 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         }
     }
 
+    public void setNPCData(NPCTemplateEntity npcTemplate) {
+        this.setData(
+            ModAttachments.NPC_DATA.get(),
+            new NPCDataEntity(npcTemplate.data())
+        );
+
+        NPCDataEntity npcData = this.getData(ModAttachments.NPC_DATA);
+
+        if (npcData.equipment().isPresent()) {
+            for (EquipmentSlot equipmentSlot : npcData.equipment().get().keySet()) {
+                ResourceLocation itemId = npcData.equipment().get().get(equipmentSlot);
+                Item item = BuiltInRegistries.ITEM.get(itemId);
+
+                this.setEquipment(equipmentSlot, new ItemStack(item));
+            }
+        }
+    }
+
+    @Override
+    public void registerTraits() {
+        TraitDatabaseRepository.setAll(
+            this.getData(ModAttachments.NPC_TRAITS).traitIds(),
+            TraitType.NPC,
+            this.getUUID()
+        );
+    }
+
+    @Override
+    public List<ResourceLocation> getTraits() {
+        return this.getData(ModAttachments.NPC_TRAITS).traitIds();
+    }
+
+    public void setNPCTraits() {
+        RandomSource random = RandomSource.create();
+
+        List<ResourceLocation> traitIds = new ArrayList<>();
+        String[] categories = {"attitude"};
+
+        for (String category : categories) {
+            TraitEntity trait = TraitManager.determineTraitByWeight(
+                random,
+                TraitRepository.getTraits(TraitType.NPC, category)
+            );
+
+            if (trait != null) {
+                traitIds.add(trait.id());
+            }
+
+            random.nextInt();
+        }
+
+        this.setData(
+            ModAttachments.NPC_TRAITS.get(),
+            new AttachedTraitsEntity(traitIds)
+        );
+    }
+
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(
         @NotNull ServerLevelAccessor levelAccessor,
@@ -340,9 +419,11 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
     ) {
         spawnGroupData = super.finalizeSpawn(levelAccessor, difficulty, spawnType, spawnGroupData);
 
-        List<NPCTemplate> viableTemplates = NPCSpawnManager.getViableTemplates(
+        BlockPos pos = this.blockPosition();
+
+        List<NPCTemplateEntity> viableTemplates = NPCSpawnManager.getViableTemplates(
             levelAccessor,
-            this.blockPosition()
+            pos
         );
 
         if (viableTemplates.isEmpty()) {
@@ -353,7 +434,12 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
         }
 
         RandomSource random = levelAccessor.getRandom();
-        NPCTemplate npcTemplate = NPCSpawnManager.determineTemplateByWeight(random, viableTemplates);
+        NPCTemplateEntity npcTemplate = NPCSpawnManager.determineTemplateByWeight(
+            levelAccessor,
+            pos,
+            random,
+            viableTemplates
+        );
 
         if (npcTemplate == null) {
             RPGMobs.LOGGER.info("No template was determined by spawn weight");
@@ -364,21 +450,90 @@ public abstract class AbstractNPCEntity<T extends AbstractNPCEntity<T>> extends 
 
         RPGMobs.LOGGER.info("NPC was determined to be {}", npcTemplate.id());
 
-        this.setData(
-            ModAttachments.NPC_DATA.get(),
-            new NPCData(
-                npcTemplate.id(),
-                npcTemplate.id().toString()
-            )
-        );
+        this.setNPCData(npcTemplate);
+        this.setNPCTraits();
 
         this.setCustomName(
-            Component.literal(this.getData(ModAttachments.NPC_DATA.get()).name())
+            Component.literal(this.getData(ModAttachments.NPC_DATA.get()).name().orElse("Undefined"))
         );
 
         this.populateDefaultEquipmentSlots(random, difficulty);
-
         return spawnGroupData;
+    }
+
+    @Override
+    public boolean canFireProjectileWeapon(@NotNull ProjectileWeaponItem projectileWeapon) {
+        return true;
+    }
+
+    @Override
+    public boolean isHolding(Predicate<ItemStack> predicate) {
+        return predicate.test(this.getItemBySlot(EquipmentSlot.MAINHAND)) || super.isHolding(predicate);
+    }
+
+    protected AbstractArrow getArrow(ItemStack arrow, float velocity, @javax.annotation.Nullable ItemStack weapon) {
+        return ProjectileUtil.getMobArrow(this, arrow, velocity, weapon);
+    }
+
+    @Override
+    public @NotNull ItemStack getProjectile(@NotNull ItemStack weapon) {
+        if (weapon.getItem() instanceof ProjectileWeaponItem) {
+            return new ItemStack(Items.ARROW);
+        }
+
+        return super.getProjectile(weapon);
+    }
+
+    @Override
+    public void performRangedAttack(@NotNull LivingEntity target, float distanceFactor) {
+        ItemStack weapon = this.getItemBySlot(EquipmentSlot.MAINHAND);
+
+        ItemStack projectileStack = this.getProjectile(weapon);
+        AbstractArrow abstractArrow = this.getArrow(projectileStack, distanceFactor, weapon);
+
+        if (weapon.getItem() instanceof ProjectileWeaponItem weaponItem) {
+            abstractArrow = weaponItem.customArrow(abstractArrow, projectileStack, weapon);
+        }
+
+        double spawnX = this.getX() + this.getLookAngle().x * 0.5D;
+        double spawnY = this.getEyeY() - 0.1D;
+        double spawnZ = this.getZ() + this.getLookAngle().z * 0.5D;
+
+        abstractArrow.moveTo(spawnX, spawnY, spawnZ, abstractArrow.getYRot(), abstractArrow.getXRot());
+
+        double d0 = target.getX() - abstractArrow.getX();
+        double d1 = target.getY(0.3333333333333333) - abstractArrow.getY();
+        double d2 = target.getZ() - abstractArrow.getZ();
+        double d3 = Math.sqrt(d0 * d0 + d2 * d2);
+
+        abstractArrow.shoot(d0, d1 + d3 * 0.2F, d2, 1.6F, (float) (14 - this.level().getDifficulty().getId() * 4));
+
+        this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.level().addFreshEntity(abstractArrow);
+    }
+
+    public boolean isChargingCrossbow() {
+        return this.entityData.get(IS_CHARGING_CROSSBOW);
+    }
+
+    public void setChargingCrossbow(boolean isCharging) {
+        this.entityData.set(IS_CHARGING_CROSSBOW, isCharging);
+    }
+
+    public void onCrossbowAttackPerformed() {
+        this.noActionTime = 0;
+    }
+
+    public HumanlikeArmPose getArmPose() {
+        if (this.isChargingCrossbow()) {
+            return HumanlikeArmPose.CROSSBOW_CHARGE;
+        } else if (this.isHolding(is -> is.getItem() instanceof CrossbowItem)) {
+            return HumanlikeArmPose.CROSSBOW_HOLD;
+        } else if (this.isHolding(is -> is.getItem() instanceof BowItem)) {
+            return HumanlikeArmPose.BOW_AND_ARROW;
+        } else {
+            return HumanlikeArmPose.NEUTRAL;
+        }
     }
 
     @Override

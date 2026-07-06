@@ -9,16 +9,16 @@ import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
 import java.util.List;
 
-public record UnlockedConversationTopics(List<ResourceLocation> unlockedTopics) {
-    public UnlockedConversationTopics(
+public record AttachedConversationTopicsEntity(List<ResourceLocation> topics) {
+    public AttachedConversationTopicsEntity(
         IAttachmentHolder iAttachmentHolder
     ) {
         this(((IConversationTopicsAccessor) iAttachmentHolder).getDefaultConversationTopics());
     }
 
-    public static final Codec<UnlockedConversationTopics> CODEC = ResourceLocation.CODEC.listOf()
-        .xmap(UnlockedConversationTopics::new, UnlockedConversationTopics::unlockedTopics);
+    public static final Codec<AttachedConversationTopicsEntity> CODEC = ResourceLocation.CODEC.listOf()
+        .xmap(AttachedConversationTopicsEntity::new, AttachedConversationTopicsEntity::topics);
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, UnlockedConversationTopics> STREAM_CODEC =
+    public static final StreamCodec<RegistryFriendlyByteBuf, AttachedConversationTopicsEntity> STREAM_CODEC =
         ByteBufCodecs.fromCodecWithRegistries(CODEC);
 }

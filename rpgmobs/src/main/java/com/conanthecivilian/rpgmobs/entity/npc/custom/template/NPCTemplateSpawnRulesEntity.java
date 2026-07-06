@@ -8,11 +8,11 @@ import net.minecraft.world.level.levelgen.VerticalAnchor;
 import java.util.Map;
 import java.util.Optional;
 
-public record NPCTemplateSpawnRules(
+public record NPCTemplateSpawnRulesEntity(
     float baseChance,
     int weight,
     Optional<Conditions> conditions,
-    Map<String, Map<ResourceLocation, Float>> multipliers
+    Optional<Multipliers> multipliers
 ) {
     public record Conditions(
         Optional<YRange> y
@@ -29,16 +29,18 @@ public record NPCTemplateSpawnRules(
         ).apply(instance, Conditions::new));
     }
 
-    public static Codec<NPCTemplateSpawnRules> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        Codec.FLOAT.fieldOf("base_chance").forGetter(NPCTemplateSpawnRules::baseChance),
-        Codec.INT.fieldOf("weight").forGetter(NPCTemplateSpawnRules::weight),
-        Conditions.CODEC.optionalFieldOf("conditions").forGetter(NPCTemplateSpawnRules::conditions),
-        Codec.unboundedMap(
-            Codec.STRING,
-            Codec.unboundedMap(
-                ResourceLocation.CODEC,
-                Codec.FLOAT
-            )
-        ).fieldOf("multipliers").forGetter(NPCTemplateSpawnRules::multipliers)
-    ).apply(instance, NPCTemplateSpawnRules::new));
+    public record Multipliers(
+        Map<ResourceLocation, Float> structures
+    ) {
+        public static Codec<Multipliers> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.unboundedMap(ResourceLocation.CODEC, Codec.FLOAT).fieldOf("structures").forGetter(Multipliers::structures)
+        ).apply(instance, Multipliers::new));
+    }
+
+    public static Codec<NPCTemplateSpawnRulesEntity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        Codec.FLOAT.fieldOf("base_chance").forGetter(NPCTemplateSpawnRulesEntity::baseChance),
+        Codec.INT.fieldOf("weight").forGetter(NPCTemplateSpawnRulesEntity::weight),
+        Conditions.CODEC.optionalFieldOf("conditions").forGetter(NPCTemplateSpawnRulesEntity::conditions),
+        Multipliers.CODEC.optionalFieldOf("multipliers").forGetter(NPCTemplateSpawnRulesEntity::multipliers)
+    ).apply(instance, NPCTemplateSpawnRulesEntity::new));
 }

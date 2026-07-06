@@ -1,0 +1,10 @@
+{
+    "id": "rpgmobs:trait_attitude_polite",
+    "label": "Polite",
+    "weight": 20,
+    "category": "attitude",
+    "type": [
+        "npc",
+        "dialogue"
+    ]
+}

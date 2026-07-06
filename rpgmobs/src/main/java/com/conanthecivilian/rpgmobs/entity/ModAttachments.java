@@ -1,7 +1,8 @@
 package com.conanthecivilian.rpgmobs.entity;
 
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.UnlockedConversationTopics;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.data.NPCData;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.AttachedConversationTopicsEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.custom.data.NPCDataEntity;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.AttachedTraitsEntity;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -11,23 +12,28 @@ public class ModAttachments {
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
         DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, "rpgmobs");
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<UnlockedConversationTopics>> PLAYER_UNLOCKED_CONVERSATION_TOPICS =
-        ATTACHMENT_TYPES.register("player_topics", () -> AttachmentType.builder(UnlockedConversationTopics::new)
-            .serialize(UnlockedConversationTopics.CODEC)
-            .sync(UnlockedConversationTopics.STREAM_CODEC)
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<AttachedConversationTopicsEntity>> PLAYER_UNLOCKED_CONVERSATION_TOPICS =
+        ATTACHMENT_TYPES.register("player_topics", () -> AttachmentType.builder(AttachedConversationTopicsEntity::new)
+            .serialize(AttachedConversationTopicsEntity.CODEC)
+            .sync(AttachedConversationTopicsEntity.STREAM_CODEC)
             .copyOnDeath()
             .build());
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<UnlockedConversationTopics>> NPC_TOPICS =
-        ATTACHMENT_TYPES.register("npc_topics", () -> AttachmentType.builder(UnlockedConversationTopics::new)
-            .serialize(UnlockedConversationTopics.CODEC)
-            .sync(UnlockedConversationTopics.STREAM_CODEC)
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<AttachedConversationTopicsEntity>> NPC_TOPICS =
+        ATTACHMENT_TYPES.register("npc_topics", () -> AttachmentType.builder(AttachedConversationTopicsEntity::new)
+            .serialize(AttachedConversationTopicsEntity.CODEC)
+            .sync(AttachedConversationTopicsEntity.STREAM_CODEC)
             .build());
 
-    public static final DeferredHolder<AttachmentType<?>, AttachmentType<NPCData>> NPC_DATA =
-        ATTACHMENT_TYPES.register("npc_data", () -> AttachmentType.builder(NPCData::new)
-            .serialize(NPCData.CODEC)
-            .sync(NPCData.STREAM_CODEC)
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<NPCDataEntity>> NPC_DATA =
+        ATTACHMENT_TYPES.register("npc_data", () -> AttachmentType.builder(NPCDataEntity::new)
+            .serialize(NPCDataEntity.CODEC)
+            .sync(NPCDataEntity.STREAM_CODEC)
             .build());
 
+    public static final DeferredHolder<AttachmentType<?>, AttachmentType<AttachedTraitsEntity>> NPC_TRAITS =
+        ATTACHMENT_TYPES.register("npc_traits", () -> AttachmentType.builder(AttachedTraitsEntity::new)
+            .serialize(AttachedTraitsEntity.CODEC)
+            .build()
+        );
 }

@@ -2,7 +2,7 @@
     "id": "rpgmobs:common_greeting_rude",
     "content": "What do you want?",
     "unlocked_topic_ids": [],
-    "tags": [
-        "rpgmobs:tag_attitude_rude"
+    "traits": [
+        "rpgmobs:trait_attitude_rude"
     ]
 }

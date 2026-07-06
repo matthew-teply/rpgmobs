@@ -201,7 +201,8 @@
             <element class="title-container">
                 <element style="flex: 1;">
                 </element>
-                <label id="title" class="title font-standard">Jeff - Human Guard</label>
+                <label id="title" class="title font-standard">
+                </label>
                 <element style="flex: 1;">
                 </element>
             </element>

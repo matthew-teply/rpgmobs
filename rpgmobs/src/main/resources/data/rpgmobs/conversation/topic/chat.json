@@ -5,8 +5,5 @@
     "dialogue_ids": [
         "rpgmobs:rumor_herobrine",
         "rpgmobs:rumor_creeper"
-    ],
-    "tags": [
-        "rpgmobs:tag_conversation_common"
     ]
 }

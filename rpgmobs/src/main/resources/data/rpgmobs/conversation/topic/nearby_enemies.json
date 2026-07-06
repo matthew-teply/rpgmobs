@@ -6,8 +6,5 @@
         "rpgmobs:common_nearby_enemies_1",
         "rpgmobs:common_nearby_enemies_2",
         "rpgmobs:common_nearby_enemies_3"
-    ],
-    "tags": [
-        "rpgmobs:tag_conversation_common"
     ]
 }

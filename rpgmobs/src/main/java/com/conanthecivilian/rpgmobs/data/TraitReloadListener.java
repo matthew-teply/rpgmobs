@@ -1,6 +1,8 @@
 package com.conanthecivilian.rpgmobs.data;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.TraitEntity;
+import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
@@ -11,24 +13,19 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 
-// Reload listeners because it reloads stuff on /reload command
-public class GenericReloadListener<T> extends SimpleJsonResourceReloadListener {
-    protected final Codec<T> codec;
-    protected final HashMap<ResourceLocation, T> registry;
+public class TraitReloadListener extends SimpleJsonResourceReloadListener {
+    protected final Codec<TraitEntity> codec;
     protected final String templateLocation;
 
-    public GenericReloadListener(
-        Codec<T> codec,
-        HashMap<ResourceLocation, T> registry,
+    public TraitReloadListener(
+        Codec<TraitEntity> codec,
         String templateLocation
     ) {
         super(new Gson(), templateLocation);
 
         this.codec = codec;
-        this.registry = registry;
         this.templateLocation = templateLocation;
     }
 
@@ -38,23 +35,19 @@ public class GenericReloadListener<T> extends SimpleJsonResourceReloadListener {
         @NotNull ResourceManager resourceManager,
         @NotNull ProfilerFiller profilerFiller
     ) {
-        this.registry.clear();
+        TraitRepository.TRAITS.clear();
+        TraitRepository.TRAIT_LOOKUP.clear();
 
         // Map containing the raw JSON elements discovered by Minecraft
         parsed.forEach((location, jsonElement) -> {
             // Convert raw JSON elements into your clean Java Record via Codec
             this.codec.parse(JsonOps.INSTANCE, jsonElement)
                 .resultOrPartial(error -> RPGMobs.LOGGER.error("Failed to parse template {}: {}", location, error))
-                .ifPresent(template -> {
-                    String fullPath = location.getPath();
-                    String filenameOnly = fullPath.substring(fullPath.lastIndexOf('/') + 1);
-
-                    ResourceLocation cleanKey = ResourceLocation.fromNamespaceAndPath("rpgmobs", filenameOnly);
-
-                    this.registry.put(cleanKey, template);
+                .ifPresent(id -> {
+                    TraitRepository.setTrait(id);
                 });
         });
 
-        RPGMobs.LOGGER.info("Loaded {} event templates successfully from {}.", this.registry.size(), this.templateLocation);
+        RPGMobs.LOGGER.info("Loaded {} event templates successfully from {}.", TraitRepository.TRAITS.size(), this.templateLocation);
     }
 }

@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.List;
 
 public interface IConversationTopicsAccessor {
-    List<ConversationTopic> getConversationTopics();
+    List<ConversationTopicEntity> getConversationTopics();
 
     List<ResourceLocation> getDefaultConversationTopics();
 

@@ -1,8 +1,8 @@
 package com.conanthecivilian.rpgmobs.repository;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogue;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogueEntity;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -16,11 +16,11 @@ public class ConversationRepository {
     public static final String TOPICS_TEMPLATES_LOCATION = "conversation/topic";
     public static final String DIALOGUES_TEMPLATES_LOCATION = "conversation/dialogue";
 
-    public static final HashMap<ResourceLocation, ConversationTopic> TOPICS = new HashMap<>();
-    public static final HashMap<ResourceLocation, ConversationDialogue> DIALOGUES = new HashMap<>();
+    public static final HashMap<ResourceLocation, ConversationTopicEntity> TOPICS = new HashMap<>();
+    public static final HashMap<ResourceLocation, ConversationDialogueEntity> DIALOGUES = new HashMap<>();
 
-    public static ConversationTopic getTopic(ResourceLocation topicId) {
-        ConversationTopic topic = TOPICS.get(topicId);
+    public static ConversationTopicEntity getTopic(ResourceLocation topicId) {
+        ConversationTopicEntity topic = TOPICS.get(topicId);
 
         if (topic == null) {
             RPGMobs.LOGGER.info("Topic \"{}\" is null", topicId);
@@ -30,10 +30,10 @@ public class ConversationRepository {
         return topic;
     }
 
-    public static ConversationDialogue getDialogue(ResourceLocation dialogueId) {
+    public static ConversationDialogueEntity getDialogue(ResourceLocation dialogueId) {
         //RPGMobs.LOGGER.info("Loading dialogue {}", dialogueId);
 
-        ConversationDialogue dialogue = DIALOGUES.get(dialogueId);
+        ConversationDialogueEntity dialogue = DIALOGUES.get(dialogueId);
 
         if (dialogue == null) {
             RPGMobs.LOGGER.info("Dialogue \"{}\" is null", dialogueId);
@@ -43,9 +43,9 @@ public class ConversationRepository {
         return dialogue;
     }
 
-    public static List<ConversationDialogue> getTopicDialogues(ResourceLocation topicId) {
-        ConversationTopic conversationTopic = getTopic(topicId);
-        List<ConversationDialogue> dialogues = new ArrayList<>();
+    public static List<ConversationDialogueEntity> getTopicDialogues(ResourceLocation topicId) {
+        ConversationTopicEntity conversationTopic = getTopic(topicId);
+        List<ConversationDialogueEntity> dialogues = new ArrayList<>();
 
         if (conversationTopic == null) {
             throw new Error("Conversation topic \"" + topicId + "\" not found");
@@ -58,11 +58,11 @@ public class ConversationRepository {
         return dialogues;
     }
 
-    public static ConversationDialogue getRandomTopicDialogue(
+    public static ConversationDialogueEntity getRandomTopicDialogue(
         ResourceLocation topicId,
         Optional<List<ResourceLocation>> excludedIds
     ) {
-        List<ConversationDialogue> dialogues = getTopicDialogues(topicId);
+        List<ConversationDialogueEntity> dialogues = getTopicDialogues(topicId);
 
         excludedIds.ifPresent(resourceLocations -> IntStream.range(0, dialogues.size())
             .forEach(dialogueIndex -> {

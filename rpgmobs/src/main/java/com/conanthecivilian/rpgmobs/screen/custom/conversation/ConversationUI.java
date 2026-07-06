@@ -1,10 +1,11 @@
 package com.conanthecivilian.rpgmobs.screen.custom.conversation;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogue;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogueEntity;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
 import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
 import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationManager;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
 import com.conanthecivilian.rpgmobs.screen.custom.ConversationMDParser;
@@ -21,10 +22,10 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
 import com.lowdragmc.lowdraglib2.utils.XmlUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ConversationUI {
     private final Player player;
@@ -40,8 +41,8 @@ public class ConversationUI {
     private ProgressBar relationshipBar;
     private ScrollerView topics;
 
-    private RPCEmitter conversationRefreshEmitter;
-    private RPCEmitter clientTopicBridgeEmitter;
+    public RPCEmitter conversationRefreshEmitter;
+    public RPCEmitter clientTopicBridgeEmitter;
 
     public ConversationUI(Player player, AbstractNPCEntity<?> entity) {
         this.player = player;
@@ -65,20 +66,6 @@ public class ConversationUI {
             registerRelationshipBarValues();
             renderTopics();
             registerExitButtonEvent();
-
-            ResourceLocation greetingsTopicId = ResourceLocation.parse("rpgmobs:greeting");
-
-            addDialogueEntry(
-                ConversationHydratorRepository.getDefault().hydrate(
-                    this.player,
-                    this.entity,
-                    ConversationRepository.getTopic(greetingsTopicId).getQuestion()
-                ),
-                ConversationRepository.getRandomTopicDialogue(
-                    greetingsTopicId,
-                    Optional.empty()
-                ).getHydratedContent(this.player, this.entity)
-            );
         }
     }
 
@@ -100,8 +87,8 @@ public class ConversationUI {
     }
 
     private void renderTopics(IConversationTopicsAccessor conversationPlayer) {
-        List<ConversationTopic> entityTopics = this.entity.getConversationTopics();
-        List<ConversationTopic> playerTopics = conversationPlayer.getConversationTopics();
+        List<ConversationTopicEntity> entityTopics = this.entity.getConversationTopics();
+        List<ConversationTopicEntity> playerTopics = conversationPlayer.getConversationTopics();
 
         entityTopics.forEach(entityTopic -> {
             if (entityTopic == null) {
@@ -126,7 +113,7 @@ public class ConversationUI {
     }
 
     private void refreshTopics(IConversationTopicsAccessor conversationPlayer) {
-        List<ConversationTopic> playerTopics = conversationPlayer.getConversationTopics();
+        List<ConversationTopicEntity> playerTopics = conversationPlayer.getConversationTopics();
 
         playerTopics.forEach(playerTopic -> {
             Button topicButton = (Button) this.topics
@@ -153,17 +140,12 @@ public class ConversationUI {
         this.conversationRefreshEmitter = content.addRPCEvent(RPCEventBuilder.simple(
             String[].class, String.class, String.class,
             (ids, hydratedQuestion, hydratedAnswer) -> {
-                ResourceLocation topicId = ResourceLocation.parse(ids[0]);
-                ResourceLocation dialogueId = ResourceLocation.parse(ids[1]);
-
-                ConversationTopic currentConversationTopic = ConversationRepository.getTopic(
-                    ResourceLocation.parse(ids[0])
-                );
-                ConversationDialogue currentConversationDialogue = ConversationRepository.getDialogue(
+                ConversationDialogueEntity currentConversationDialogue = ConversationRepository.getDialogue(
                     ResourceLocation.parse(ids[1])
                 );
 
                 if (currentConversationDialogue == null) {
+                    RPGMobs.LOGGER.info("Dialogue \"{}\" not found", ids[1]);
                     return;
                 }
 
@@ -182,6 +164,8 @@ public class ConversationUI {
                     contentTest.setDisplay(false);
                     content.setDisplay(true);
 
+                    RPGMobs.LOGGER.info(hydratedAnswer);
+
                     if (hydratedQuestion.isBlank()) {
                         this.addDialogueEntry(hydratedAnswer);
                     } else {
@@ -196,10 +180,10 @@ public class ConversationUI {
         this.clientTopicBridgeEmitter = content.addRPCEvent(RPCEventBuilder.simple(
             String.class,
             (topicIdString) -> {
-                // THIS RUNS ON THE SERVER
-                ResourceLocation topicId = ResourceLocation.parse(topicIdString);
-                RPGMobs.LOGGER.info("Player clicked inline topic: " + topicId);
+                RPGMobs.LOGGER.info(topicIdString);
 
+                // This runs on server
+                ResourceLocation topicId = ResourceLocation.parse(topicIdString);
                 this.selectTopic(ConversationRepository.getTopic(topicId));
             }
         ));
@@ -231,32 +215,46 @@ public class ConversationUI {
         this.content.addChild(entryContainer);
     }
 
-    public void selectTopic(ConversationTopic conversationTopic) {
+    public void selectTopic(ConversationTopicEntity conversationTopic) {
         if (!(this.player instanceof IConversationTopicsAccessor conversationPlayer)) {
             RPGMobs.LOGGER.warn("Player is not an instance of IConversationTopicsAccessor");
             return;
         }
 
-        ConversationDialogue randomDialogue = ConversationRepository.getRandomTopicDialogue(
+        RandomSource random = RandomSource.create();
+
+        ConversationDialogueEntity dialogue = ConversationManager.determineDialogueByTraits(
             conversationTopic.getId(),
-            Optional.empty()
+            this.entity,
+            random
         );
 
-        randomDialogue.callback(conversationPlayer);
+        if (dialogue == null) {
+            String[] ids = {};
+
+            this.conversationRefreshEmitter.send(
+                ids,
+                conversationTopic.getName(),
+                "Dialogue for topic \"" + conversationTopic.getId() + "\" not found!"
+            );
+            return;
+        }
+
+        dialogue.callback(conversationPlayer);
 
         this.topics.sendMessage("refresh");
 
-        String hydratedQuestion = randomDialogue.getQuestion().isPresent()
-            ? randomDialogue.getHydratedQuestion(this.player, this.entity)
+        String hydratedQuestion = dialogue.getQuestion().isPresent()
+            ? dialogue.getHydratedQuestion(this.player, this.entity)
             : ConversationHydratorRepository.getDefault().hydrate(
             this.player,
             this.entity,
             conversationTopic.getQuestion()
         );
 
-        String hydratedAnswer = randomDialogue.getHydratedContent(this.player, this.entity);
+        String hydratedAnswer = dialogue.getHydratedContent(this.player, this.entity);
 
-        String[] ids = {conversationTopic.getId().toString(), randomDialogue.getId().toString()};
+        String[] ids = {conversationTopic.getId().toString(), dialogue.getId().toString()};
 
         this.conversationRefreshEmitter.send(
             ids,

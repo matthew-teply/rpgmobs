@@ -2,7 +2,7 @@
     "id": "rpgmobs:mob_creeper_polite",
     "content": "Never heard of it, {player_name}, sorry...",
     "unlocked_topic_ids": [],
-    "tags": [
-        "rpgmobs:tag_attitude_polite"
+    "traits": [
+        "rpgmobs:trait_attitude_polite"
     ]
 }

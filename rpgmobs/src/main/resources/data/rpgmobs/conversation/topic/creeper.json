@@ -5,8 +5,5 @@
     "dialogue_ids": [
         "rpgmobs:mob_creeper_polite",
         "rpgmobs:mob_creeper_rude"
-    ],
-    "tags": [
-        "rpgmobs:tag_conversation_common"
     ]
 }

@@ -2,11 +2,11 @@ package com.conanthecivilian.rpgmobs.entity.conversation.custom;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.entity.trait.custom.ITraitHolder;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.IConversationHydrator;
-import com.conanthecivilian.rpgmobs.manager.TagManager.ITagHolder;
-import com.conanthecivilian.rpgmobs.manager.TagManager.TagRepository;
-import com.conanthecivilian.rpgmobs.manager.TagManager.TagType;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitDatabaseRepository;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -16,35 +16,36 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ConversationDialogue implements ITagHolder {
+public class ConversationDialogueEntity implements ITraitHolder {
     private ResourceLocation id;
     private String content;
     private List<ResourceLocation> unlockedTopicIds;
-    private List<ResourceLocation> tags;
+
+    private final List<ResourceLocation> traits;
 
     private Optional<String> question;
     private Optional<List<ResourceLocation>> hydrators;
     private Optional<String> fallback;
     private Optional<ResourceLocation> template;
 
-    public static Codec<ConversationDialogue> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        ResourceLocation.CODEC.fieldOf("id").forGetter(ConversationDialogue::getId),
-        Codec.STRING.fieldOf("content").forGetter(ConversationDialogue::getContent),
-        ResourceLocation.CODEC.listOf().fieldOf("unlocked_topic_ids").forGetter(ConversationDialogue::getUnlockedTopicIds),
-        ResourceLocation.CODEC.listOf().fieldOf("tags").forGetter(ConversationDialogue::getEntityTags),
+    public static Codec<ConversationDialogueEntity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        ResourceLocation.CODEC.fieldOf("id").forGetter(ConversationDialogueEntity::getId),
+        Codec.STRING.fieldOf("content").forGetter(ConversationDialogueEntity::getContent),
+        ResourceLocation.CODEC.listOf().fieldOf("unlocked_topic_ids").forGetter(ConversationDialogueEntity::getUnlockedTopicIds),
 
-        Codec.STRING.optionalFieldOf("question").forGetter(ConversationDialogue::getQuestion),
-        ResourceLocation.CODEC.listOf().optionalFieldOf("hydrators").forGetter(ConversationDialogue::getHydrators),
-        Codec.STRING.optionalFieldOf("fallback").forGetter(ConversationDialogue::getFallback),
-        ResourceLocation.CODEC.optionalFieldOf("template").forGetter(ConversationDialogue::getTemplate)
-    ).apply(instance, ConversationDialogue::new));
+        ResourceLocation.CODEC.listOf().optionalFieldOf("traits").forGetter(ConversationDialogueEntity::codecGetTraits),
+        Codec.STRING.optionalFieldOf("question").forGetter(ConversationDialogueEntity::getQuestion),
+        ResourceLocation.CODEC.listOf().optionalFieldOf("hydrators").forGetter(ConversationDialogueEntity::getHydrators),
+        Codec.STRING.optionalFieldOf("fallback").forGetter(ConversationDialogueEntity::getFallback),
+        ResourceLocation.CODEC.optionalFieldOf("template").forGetter(ConversationDialogueEntity::getTemplate)
+    ).apply(instance, ConversationDialogueEntity::new));
 
-    public ConversationDialogue(
+    public ConversationDialogueEntity(
         ResourceLocation id,
         String content,
         List<ResourceLocation> unlockedTopicIds,
-        List<ResourceLocation> tags,
 
+        Optional<List<ResourceLocation>> traits,
         Optional<String> question,
         Optional<List<ResourceLocation>> hydrators,
         Optional<String> fallback,
@@ -53,12 +54,14 @@ public class ConversationDialogue implements ITagHolder {
         this.id = id;
         this.content = content;
         this.unlockedTopicIds = unlockedTopicIds;
-        this.tags = tags;
+        this.traits = traits.orElse(List.of());
 
         this.question = question;
         this.hydrators = hydrators;
         this.fallback = fallback;
         this.template = template;
+
+        this.registerTraits();
     }
 
     public void callback(IConversationTopicsAccessor conversationTopicsAccessor) {
@@ -170,12 +173,18 @@ public class ConversationDialogue implements ITagHolder {
     }
 
     @Override
-    public void registerTags() {
-        TagRepository.setAll(this.tags, TagType.DIALOGUE, this.id);
+    public void registerTraits() {
+        if (!this.traits.isEmpty()) {
+            TraitDatabaseRepository.setAll(this.traits, TraitType.DIALOGUE, this.id);
+        }
     }
 
     @Override
-    public List<ResourceLocation> getEntityTags() {
-        return this.tags;
+    public List<ResourceLocation> getTraits() {
+        return this.traits;
+    }
+
+    private Optional<List<ResourceLocation>> codecGetTraits() {
+        return Optional.of(this.traits);
     }
 }

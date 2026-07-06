@@ -5,8 +5,5 @@
     "dialogue_ids": [
         "rpgmobs:common_greeting_polite",
         "rpgmobs:common_greeting_rude"
-    ],
-    "tags": [
-        "rpgmobs:tag_conversation_common"
     ]
 }

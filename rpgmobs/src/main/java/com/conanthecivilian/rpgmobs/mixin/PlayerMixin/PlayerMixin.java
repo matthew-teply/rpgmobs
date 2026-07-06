@@ -1,9 +1,9 @@
 package com.conanthecivilian.rpgmobs.mixin.PlayerMixin;
 
 import com.conanthecivilian.rpgmobs.entity.ModAttachments;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.AttachedConversationTopicsEntity;
+import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
 import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.UnlockedConversationTopics;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -22,12 +22,12 @@ public abstract class PlayerMixin implements IConversationTopicsAccessor {
         );
     }
 
-    public List<ConversationTopic> getConversationTopics() {
+    public List<ConversationTopicEntity> getConversationTopics() {
         Player player = (Player) (Object) this;
 
         return player
             .getData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get())
-            .unlockedTopics()
+            .topics()
             .stream()
             .map(ConversationRepository::getTopic)
             .toList();
@@ -37,12 +37,12 @@ public abstract class PlayerMixin implements IConversationTopicsAccessor {
         Player player = (Player) (Object) this;
 
         List<ResourceLocation> unlockedTopics =
-            new ArrayList<>(player.getData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get()).unlockedTopics());
+            new ArrayList<>(player.getData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get()).topics());
 
         if (!unlockedTopics.contains(topicId)) {
             unlockedTopics.add(topicId);
 
-            player.setData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get(), new UnlockedConversationTopics(unlockedTopics));
+            player.setData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get(), new AttachedConversationTopicsEntity(unlockedTopics));
         }
     }
 }
