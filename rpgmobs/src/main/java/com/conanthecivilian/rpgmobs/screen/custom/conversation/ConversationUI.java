@@ -19,9 +19,12 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Label;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ProgressBar;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ScrollerView;
+import com.lowdragmc.lowdraglib2.gui.ui.event.UIEventListener;
+import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvents;
 import com.lowdragmc.lowdraglib2.utils.XmlUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 
@@ -44,6 +47,8 @@ public class ConversationUI {
     public RPCEmitter conversationRefreshEmitter;
     public RPCEmitter clientTopicBridgeEmitter;
 
+    private UIEventListener initializeEventListener;
+
     public ConversationUI(Player player, AbstractNPCEntity<?> entity) {
         this.player = player;
         this.entity = entity;
@@ -61,8 +66,10 @@ public class ConversationUI {
             relationshipBar = (ProgressBar) ui.select("#relationship-bar").findFirst().orElseThrow();
             topics = (ScrollerView) ui.select("#topics").findFirst().orElseThrow();
 
-            registerTitleValues();
             registerDialogueEvents();
+            initializeDialogue();
+
+            registerTitleValues();
             registerRelationshipBarValues();
             renderTopics();
             registerExitButtonEvent();
@@ -164,8 +171,6 @@ public class ConversationUI {
                     contentTest.setDisplay(false);
                     content.setDisplay(true);
 
-                    RPGMobs.LOGGER.info(hydratedAnswer);
-
                     if (hydratedQuestion.isBlank()) {
                         this.addDialogueEntry(hydratedAnswer);
                     } else {
@@ -180,8 +185,6 @@ public class ConversationUI {
         this.clientTopicBridgeEmitter = content.addRPCEvent(RPCEventBuilder.simple(
             String.class,
             (topicIdString) -> {
-                RPGMobs.LOGGER.info(topicIdString);
-
                 // This runs on server
                 ResourceLocation topicId = ResourceLocation.parse(topicIdString);
                 this.selectTopic(ConversationRepository.getTopic(topicId));
@@ -218,6 +221,11 @@ public class ConversationUI {
     public void selectTopic(ConversationTopicEntity conversationTopic) {
         if (!(this.player instanceof IConversationTopicsAccessor conversationPlayer)) {
             RPGMobs.LOGGER.warn("Player is not an instance of IConversationTopicsAccessor");
+            return;
+        }
+
+        if (!(player instanceof ServerPlayer)) {
+            RPGMobs.LOGGER.warn("Player is not an instance of ServerPlayer");
             return;
         }
 
@@ -280,6 +288,17 @@ public class ConversationUI {
         entryContainer.addChild(entryAnswer);
 
         this.content.addChild(entryContainer);
+    }
+
+    private void initializeDialogue() {
+        this.initializeEventListener = e -> {
+            this.clientTopicBridgeEmitter.send("rpgmobs:greeting");
+
+            this.content.removeEventListener(UIEvents.TICK, this.initializeEventListener);
+        };
+
+        // The ADDED event is broken, it does not fire. This is an ugly workaround.
+        this.content.addEventListener(UIEvents.TICK, initializeEventListener);
     }
 
     private void registerRelationshipBarValues() {
