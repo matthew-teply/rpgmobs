@@ -1,8 +1,8 @@
 package com.conanthecivilian.rpgmobs.manager.NPCSpawnManager;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.template.NPCTemplateEntity;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.template.NPCTemplateSpawnRulesEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.template.NPCTemplate;
+import com.conanthecivilian.rpgmobs.entity.npc.template.NPCTemplateSpawnRules;
 import com.conanthecivilian.rpgmobs.repository.NPCTemplateRepository;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class NPCSpawnManager {
-    public static List<NPCTemplateEntity> getViableTemplates(
+    public static List<NPCTemplate> getViableTemplates(
         LevelAccessor levelAccessor,
         BlockPos pos
     ) {
@@ -30,13 +30,13 @@ public class NPCSpawnManager {
             return List.of();
         }
 
-        ArrayList<NPCTemplateEntity> viableTemplates = new ArrayList<>();
+        ArrayList<NPCTemplate> viableTemplates = new ArrayList<>();
         ServerLevel level = serverLevelAccessor.getLevel();
 
         ChunkGenerator generator = level.getChunkSource().getGenerator();
         WorldGenerationContext context = new WorldGenerationContext(generator, level);
 
-        for (NPCTemplateEntity npcTemplate : NPCTemplateRepository.getAll().values()) {
+        for (NPCTemplate npcTemplate : NPCTemplateRepository.getAll().values()) {
             if (areConditionsValid(context, pos, npcTemplate.spawnRules())) {
                 viableTemplates.add(npcTemplate);
             }
@@ -45,18 +45,18 @@ public class NPCSpawnManager {
         return viableTemplates;
     }
 
-    public static float getHighestSpawnChance(List<NPCTemplateEntity> npcTemplates) {
+    public static float getHighestSpawnChance(List<NPCTemplate> npcTemplates) {
         return npcTemplates.stream()
             .map(template -> template.spawnRules().baseChance())
             .max(Float::compare)
             .orElse(0.0f);
     }
 
-    public static @Nullable NPCTemplateEntity determineTemplateByWeight(
+    public static @Nullable NPCTemplate determineTemplateByWeight(
         ServerLevelAccessor levelAccessor,
         BlockPos pos,
         RandomSource random,
-        List<NPCTemplateEntity> npcTemplates
+        List<NPCTemplate> npcTemplates
     ) {
         if (npcTemplates.isEmpty()) {
             return null;
@@ -85,7 +85,7 @@ public class NPCSpawnManager {
         int randomRoll = random.nextInt(spawnPool);
         int spawnPoolSubtotal = 0;
 
-        for (NPCTemplateEntity npcTemplate : npcTemplates) {
+        for (NPCTemplate npcTemplate : npcTemplates) {
             spawnPoolSubtotal += npcTemplate.spawnRules().weight();
 
             if (spawnPoolSubtotal > randomRoll) {
@@ -97,7 +97,7 @@ public class NPCSpawnManager {
     }
 
     private static int applyWeightMultipliers(
-        NPCTemplateSpawnRulesEntity spawnRules,
+        NPCTemplateSpawnRules spawnRules,
         ServerLevel level,
         BlockPos pos
     ) {
@@ -112,7 +112,7 @@ public class NPCSpawnManager {
 
     private static void applyStructureWeightMultipliers(
         int weight,
-        NPCTemplateSpawnRulesEntity.Multipliers multipliers,
+        NPCTemplateSpawnRules.Multipliers multipliers,
         ServerLevel level,
         BlockPos pos
     ) {
@@ -144,7 +144,7 @@ public class NPCSpawnManager {
     private static boolean areConditionsValid(
         WorldGenerationContext context,
         BlockPos pos,
-        NPCTemplateSpawnRulesEntity spawnRules
+        NPCTemplateSpawnRules spawnRules
     ) {
         return isYValid(context, pos, spawnRules);
     }
@@ -152,11 +152,11 @@ public class NPCSpawnManager {
     private static boolean isYValid(
         WorldGenerationContext context,
         BlockPos pos,
-        NPCTemplateSpawnRulesEntity spawnRules
+        NPCTemplateSpawnRules spawnRules
     ) {
         if (spawnRules.conditions().isPresent()) {
             if (spawnRules.conditions().get().y().isPresent()) {
-                NPCTemplateSpawnRulesEntity.Conditions.YRange yRange = spawnRules.conditions().get().y().get();
+                NPCTemplateSpawnRules.Conditions.YRange yRange = spawnRules.conditions().get().y().get();
 
                 int minY = yRange.min().resolveY(context);
                 int maxY = yRange.max().resolveY(context);

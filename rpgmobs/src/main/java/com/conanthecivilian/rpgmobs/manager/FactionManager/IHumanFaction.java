@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.manager.FactionManager;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.human.AbstractHumanCombatantEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.human.AbstractHumanCombatant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
@@ -24,7 +24,7 @@ public interface IHumanFaction {
     }
 
     static boolean checkHumanSpawnRules(
-        EntityType<? extends AbstractHumanCombatantEntity<?>> entity,
+        EntityType<? extends AbstractHumanCombatant<?>> entity,
         LevelAccessor level,
         MobSpawnType spawnType,
         BlockPos pos,

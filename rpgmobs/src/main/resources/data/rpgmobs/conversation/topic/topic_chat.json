@@ -1,0 +1,9 @@
+{
+    "id": "rpgmobs:topic_chat",
+    "name": "Chat",
+    "question": "Have you heard anything interesting?",
+    "dialogue_ids": [
+        "rpgmobs:dialogue_rumor_herobrine",
+        "rpgmobs:dialogue_rumor_creeper"
+    ]
+}

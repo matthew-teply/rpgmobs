@@ -1,10 +1,10 @@
 package com.conanthecivilian.rpgmobs.screen.custom.conversation;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogueEntity;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.entity.conversation.ConversationDialogue;
+import com.conanthecivilian.rpgmobs.entity.conversation.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationManager;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
@@ -32,7 +32,7 @@ import java.util.List;
 
 public class ConversationUI {
     private final Player player;
-    private final AbstractNPCEntity<?> entity;
+    private final AbstractNPC<?> entity;
 
     private UI ui;
 
@@ -49,7 +49,7 @@ public class ConversationUI {
 
     private UIEventListener initializeEventListener;
 
-    public ConversationUI(Player player, AbstractNPCEntity<?> entity) {
+    public ConversationUI(Player player, AbstractNPC<?> entity) {
         this.player = player;
         this.entity = entity;
 
@@ -94,8 +94,8 @@ public class ConversationUI {
     }
 
     private void renderTopics(IConversationTopicsAccessor conversationPlayer) {
-        List<ConversationTopicEntity> entityTopics = this.entity.getConversationTopics();
-        List<ConversationTopicEntity> playerTopics = conversationPlayer.getConversationTopics();
+        List<ConversationTopic> entityTopics = this.entity.getConversationTopics();
+        List<ConversationTopic> playerTopics = conversationPlayer.getConversationTopics();
 
         entityTopics.forEach(entityTopic -> {
             if (entityTopic == null) {
@@ -120,16 +120,18 @@ public class ConversationUI {
     }
 
     private void refreshTopics(IConversationTopicsAccessor conversationPlayer) {
-        List<ConversationTopicEntity> playerTopics = conversationPlayer.getConversationTopics();
+        List<ConversationTopic> playerTopics = conversationPlayer.getConversationTopics();
 
         playerTopics.forEach(playerTopic -> {
-            Button topicButton = (Button) this.topics
-                .selectId("topic-" + playerTopic.getId().toString())
-                .findFirst()
-                .orElseThrow();
+            if (playerTopic != null) {
+                Button topicButton = (Button) this.topics
+                    .selectId("topic-" + playerTopic.getId().toString())
+                    .findFirst()
+                    .orElseThrow();
 
-            topicButton.setText(playerTopic.getName());
-            topicButton.setDisplay(true);
+                topicButton.setText(playerTopic.getName());
+                topicButton.setDisplay(true);
+            }
         });
     }
 
@@ -147,7 +149,7 @@ public class ConversationUI {
         this.conversationRefreshEmitter = content.addRPCEvent(RPCEventBuilder.simple(
             String[].class, String.class, String.class,
             (ids, hydratedQuestion, hydratedAnswer) -> {
-                ConversationDialogueEntity currentConversationDialogue = ConversationRepository.getDialogue(
+                ConversationDialogue currentConversationDialogue = ConversationRepository.getDialogue(
                     ResourceLocation.parse(ids[1])
                 );
 
@@ -218,7 +220,7 @@ public class ConversationUI {
         this.content.addChild(entryContainer);
     }
 
-    public void selectTopic(ConversationTopicEntity conversationTopic) {
+    public void selectTopic(ConversationTopic conversationTopic) {
         if (!(this.player instanceof IConversationTopicsAccessor conversationPlayer)) {
             RPGMobs.LOGGER.warn("Player is not an instance of IConversationTopicsAccessor");
             return;
@@ -231,7 +233,7 @@ public class ConversationUI {
 
         RandomSource random = RandomSource.create();
 
-        ConversationDialogueEntity dialogue = ConversationManager.determineDialogueByTraits(
+        ConversationDialogue dialogue = ConversationManager.determineDialogueByTraits(
             conversationTopic.getId(),
             this.entity,
             random
@@ -292,7 +294,7 @@ public class ConversationUI {
 
     private void initializeDialogue() {
         this.initializeEventListener = e -> {
-            this.clientTopicBridgeEmitter.send("rpgmobs:greeting");
+            this.clientTopicBridgeEmitter.send("rpgmobs:topic_greeting");
 
             this.content.removeEventListener(UIEvents.TICK, this.initializeEventListener);
         };

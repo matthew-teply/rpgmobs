@@ -7,7 +7,7 @@ public enum TraitType {
 
     public final String id;
 
-    private TraitType(String id) {
+    TraitType(String id) {
         this.id = id;
     }
 }

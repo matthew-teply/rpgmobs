@@ -1,0 +1,8 @@
+{
+    "id": "rpgmobs:dialogue_mob_creeper_polite",
+    "content": "Never heard of it, {player_name}, sorry...",
+    "unlocked_topic_ids": [],
+    "traits": [
+        "rpgmobs:trait_attitude_polite"
+    ]
+}

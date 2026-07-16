@@ -1,9 +1,9 @@
 package com.conanthecivilian.rpgmobs.mixin.PlayerMixin;
 
 import com.conanthecivilian.rpgmobs.entity.ModAttachments;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.AttachedConversationTopicsEntity;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationTopicEntity;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.entity.conversation.AttachedConversationTopics;
+import com.conanthecivilian.rpgmobs.entity.conversation.ConversationTopic;
+import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAccessor;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -16,13 +16,14 @@ import java.util.List;
 public abstract class PlayerMixin implements IConversationTopicsAccessor {
     public List<ResourceLocation> getDefaultConversationTopics() {
         return List.of(
-            ResourceLocation.parse("rpgmobs:chat"),
-            ResourceLocation.parse("rpgmobs:nearby_enemies")
+            ResourceLocation.parse("rpgmobs:topic_background"),
+            ResourceLocation.parse("rpgmobs:topic_chat"),
+            ResourceLocation.parse("rpgmobs:topic_nearby_enemies")
             //ResourceLocation.parse("faction")
         );
     }
 
-    public List<ConversationTopicEntity> getConversationTopics() {
+    public List<ConversationTopic> getConversationTopics() {
         Player player = (Player) (Object) this;
 
         return player
@@ -42,7 +43,7 @@ public abstract class PlayerMixin implements IConversationTopicsAccessor {
         if (!unlockedTopics.contains(topicId)) {
             unlockedTopics.add(topicId);
 
-            player.setData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get(), new AttachedConversationTopicsEntity(unlockedTopics));
+            player.setData(ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get(), new AttachedConversationTopics(unlockedTopics));
         }
     }
 }

@@ -1,13 +1,13 @@
 package com.conanthecivilian.rpgmobs.entity.npc.client.model;
 
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.NotNull;
 
-public class HumanlikeModel<T extends AbstractNPCEntity<T>> extends HumanoidModel<T> {
+public class HumanlikeModel<T extends AbstractNPC<T>> extends HumanoidModel<T> {
     public HumanlikeModel(ModelPart root) {
         super(root);
     }
@@ -30,17 +30,17 @@ public class HumanlikeModel<T extends AbstractNPCEntity<T>> extends HumanoidMode
     }
 
     private void prepareRangedAnimations(T entity) {
-        AbstractNPCEntity.HumanlikeArmPose abstractbiped$bipedarmpose = entity.getArmPose();
+        AbstractNPC.HumanlikeArmPose abstractbiped$bipedarmpose = entity.getArmPose();
 
-        if (abstractbiped$bipedarmpose == AbstractNPCEntity.HumanlikeArmPose.BOW_AND_ARROW) {
+        if (abstractbiped$bipedarmpose == AbstractNPC.HumanlikeArmPose.BOW_AND_ARROW) {
             if (entity.getMainArm() == HumanoidArm.RIGHT) {
                 this.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
             } else {
                 this.leftArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
             }
-        } else if (abstractbiped$bipedarmpose == AbstractNPCEntity.HumanlikeArmPose.CROSSBOW_HOLD) {
+        } else if (abstractbiped$bipedarmpose == AbstractNPC.HumanlikeArmPose.CROSSBOW_HOLD) {
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
-        } else if (abstractbiped$bipedarmpose == AbstractNPCEntity.HumanlikeArmPose.CROSSBOW_CHARGE) {
+        } else if (abstractbiped$bipedarmpose == AbstractNPC.HumanlikeArmPose.CROSSBOW_CHARGE) {
             AnimationUtils.animateCrossbowCharge(this.rightArm, this.leftArm, entity, true);
         }
     }

@@ -1,5 +1,6 @@
 {
     "id": "rpgmobs:npc_commoner",
+    "label": "Commoner",
     "data": {
         "race": "rpgmobs:race_human",
         "attributes": {

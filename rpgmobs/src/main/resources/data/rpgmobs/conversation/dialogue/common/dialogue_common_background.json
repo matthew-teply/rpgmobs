@@ -1,0 +1,6 @@
+{
+    "id": "rpgmobs:dialogue_common_background",
+    "content": "Im a {npc_background}.",
+    "unlocked_topic_ids": [],
+    "traits": []
+}

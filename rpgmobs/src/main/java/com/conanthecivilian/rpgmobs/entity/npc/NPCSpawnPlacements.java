@@ -1,6 +1,5 @@
 package com.conanthecivilian.rpgmobs.entity.npc;
 
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
@@ -11,7 +10,7 @@ public class NPCSpawnPlacements {
             NPCRegistry.NPC.get(),
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            AbstractNPCEntity::checkNPCSpawnRules,
+            AbstractNPC::checkNPCSpawnRules,
             RegisterSpawnPlacementsEvent.Operation.OR
         );
 

@@ -1,0 +1,10 @@
+{
+    "id": "rpgmobs:dialogue_common_nearby_enemies_3",
+    "content": "There is {enemies_list} roaming around in these parts, be careful.",
+    "hydrators": [
+        "rpgmobs:conversation_hydrator_nearby_enemies"
+    ],
+    "fallback": "I have not seen anyone.",
+    "unlocked_topic_ids": [],
+    "traits": []
+}

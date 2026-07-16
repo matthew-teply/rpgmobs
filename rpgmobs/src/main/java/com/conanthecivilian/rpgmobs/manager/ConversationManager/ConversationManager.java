@@ -1,8 +1,8 @@
 package com.conanthecivilian.rpgmobs.manager.ConversationManager;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.ConversationDialogueEntity;
-import com.conanthecivilian.rpgmobs.entity.trait.custom.ITraitHolder;
+import com.conanthecivilian.rpgmobs.entity.conversation.ConversationDialogue;
+import com.conanthecivilian.rpgmobs.entity.trait.ITraitHolder;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.DefaultConversationHydrator;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.NearbyEnemiesConversationHydrator;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
@@ -22,7 +22,7 @@ public class ConversationManager {
         ConversationHydratorRepository.set(new NearbyEnemiesConversationHydrator());
     }
 
-    public static @Nullable ConversationDialogueEntity determineDialogueByTraits(
+    public static @Nullable ConversationDialogue determineDialogueByTraits(
         ResourceLocation topicId,
         ITraitHolder traitHolder,
         RandomSource random
@@ -33,14 +33,14 @@ public class ConversationManager {
             return null;
         }
 
-        List<ConversationDialogueEntity> dialogues = ConversationRepository.getTopicDialogues(topicId);
-        List<ConversationDialogueEntity> traitlessDialogues = new ArrayList<>();
+        List<ConversationDialogue> dialogues = ConversationRepository.getTopicDialogues(topicId);
+        List<ConversationDialogue> traitlessDialogues = new ArrayList<>();
 
-        ConversationDialogueEntity mostViableDialogue = null;
+        ConversationDialogue mostViableDialogue = null;
 
         int mostTraitMatches = 0;
 
-        for (ConversationDialogueEntity dialogue : dialogues) {
+        for (ConversationDialogue dialogue : dialogues) {
             if (dialogue.getTraits().isEmpty()) {
                 traitlessDialogues.add(dialogue);
                 continue;

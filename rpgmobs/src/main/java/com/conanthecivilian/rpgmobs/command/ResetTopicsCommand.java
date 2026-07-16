@@ -2,8 +2,8 @@ package com.conanthecivilian.rpgmobs.command;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.ModAttachments;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.AttachedConversationTopicsEntity;
-import com.conanthecivilian.rpgmobs.entity.conversation.custom.IConversationTopicsAccessor;
+import com.conanthecivilian.rpgmobs.entity.conversation.AttachedConversationTopics;
+import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAccessor;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -53,7 +53,7 @@ public class ResetTopicsCommand {
 
                 player.setData(
                     ModAttachments.PLAYER_UNLOCKED_CONVERSATION_TOPICS.get(),
-                    new AttachedConversationTopicsEntity(accessor.getDefaultConversationTopics())
+                    new AttachedConversationTopics(accessor.getDefaultConversationTopics())
                 );
 
                 player.sendSystemMessage(

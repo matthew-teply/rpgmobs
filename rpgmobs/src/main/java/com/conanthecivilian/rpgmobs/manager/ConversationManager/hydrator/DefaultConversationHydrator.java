@@ -1,8 +1,7 @@
 package com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator;
 
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.regex.Matcher;
@@ -12,7 +11,7 @@ public class DefaultConversationHydrator implements IConversationHydrator {
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{([^}]+)}");
 
     @Override
-    public String hydrate(Player player, AbstractNPCEntity<?> entity, String rawText) {
+    public String hydrate(Player player, AbstractNPC<?> npc, String rawText) {
         if (rawText == null || rawText.isBlank()) {
             return null;
         }
@@ -22,7 +21,7 @@ public class DefaultConversationHydrator implements IConversationHydrator {
 
         while (matcher.find()) {
             String token = matcher.group(1);
-            String replacement = this.resolveToken(token, player, entity);
+            String replacement = this.resolveToken(token, player, npc);
 
             matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
@@ -36,11 +35,12 @@ public class DefaultConversationHydrator implements IConversationHydrator {
         return ResourceLocation.parse("rpgmobs:conversation_hydrator_default");
     }
 
-    private String resolveToken(String token, Player player, LivingEntity entity) {
+    private String resolveToken(String token, Player player, AbstractNPC<?> npc) {
         return switch (token.toLowerCase()) {
             case "player_name" -> player.getName().getString();
-            case "entity_name" ->
-                entity.getCustomName() != null ? entity.getCustomName().getString() : entity.getName().getString();
+            case "npc_name" ->
+                npc.getCustomName() != null ? npc.getCustomName().getString() : npc.getName().getString();
+            case "npc_background" -> npc.getNPCTemplate().label();
             default -> "{" + token + "}";
         };
     }

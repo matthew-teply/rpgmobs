@@ -1,8 +1,8 @@
 package com.conanthecivilian.rpgmobs.entity.npc.client.renderer;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import com.conanthecivilian.rpgmobs.entity.npc.client.model.HumanlikeModel;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCEntity;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-public class HumanlikeRenderer<T extends AbstractNPCEntity<T>> extends MobRenderer<T, HumanlikeModel<T>> {
+public class HumanlikeRenderer<T extends AbstractNPC<T>> extends MobRenderer<T, HumanlikeModel<T>> {
     public static final float WIDTH = 0.6F;
     public static final float HEIGHT = 1.8F;
 

@@ -1,9 +1,11 @@
 {
     "id": "rpgmobs:npc_guard",
+    "label": "Guard",
     "data": {
         "race": "rpgmobs:race_human",
         "equipment": {
-            "mainhand": "minecraft:iron_sword"
+            "mainhand": "minecraft:iron_sword",
+            "offhand": "minecraft:shield"
         },
         "attributes": {
             "movement_speed": 0.35,

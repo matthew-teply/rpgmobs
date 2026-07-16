@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.entity;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.AbstractNPCCombatantEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPCCombatant;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -25,7 +25,7 @@ public class ProjectileCollisionHandler {
             Entity victim = entityHitResult.getEntity();
             Entity shooter = arrow.getOwner();
 
-            if (!(shooter instanceof AbstractNPCCombatantEntity combatantEntity)) {
+            if (!(shooter instanceof AbstractNPCCombatant combatantEntity)) {
                 return;
             }
 

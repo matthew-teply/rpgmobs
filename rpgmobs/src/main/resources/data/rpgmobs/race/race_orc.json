@@ -1,0 +1,63 @@
+{
+    "id": "rpgmobs:race_orc",
+    "textures": [
+        "rpgmobs:textures/npc/orc/orc.png"
+    ],
+    "names": {
+        "first": {
+            "male": [
+                "Azrog",
+                "Bajok",
+                "Brog",
+                "Borkul",
+                "Carzog",
+                "Cognor",
+                "Durotan",
+                "Dagnub",
+                "Drogul",
+                "Durak",
+                "Durthok",
+                "Grog",
+                "Grom",
+                "Gar",
+                "Garrosh",
+                "Grommash",
+                "Golg",
+                "Grakor",
+                "Gromak",
+                "Grutok",
+                "Grulnak",
+                "Karg",
+                "Kragar",
+                "Kargash",
+                "Loknash",
+                "Lortar",
+                "Mug",
+                "Mok",
+                "Mugrash",
+                "Mudush",
+                "Morzuk",
+                "Nazgruum",
+                "Orgrim",
+                "Ruhk",
+                "Ruzhak",
+                "Shamog",
+                "Skarvok",
+                "Throk",
+                "Thak",
+                "Thraka",
+                "Thuzhul",
+                "Urz",
+                "Ushgorg",
+                "Ugron",
+                "Ukthol",
+                "Vorgash",
+                "Vrakul",
+                "Zog",
+                "Zornak",
+                "Zulthar"
+            ],
+            "female": []
+        }
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "id": "rpgmobs:npc_orc_fighter",
+    "label": "Orc Fighter",
+    "data": {
+        "race": "rpgmobs:race_orc",
+        "equipment": {
+            "mainhand": "minecraft:stone_sword"
+        },
+        "attributes": {
+            "movement_speed": 0.35,
+            "max_health": 24.0,
+            "attack_damage": 5.0,
+            "follow_range": 32.0
+        }
+    },
+    "spawn": {
+        "base_chance": 0.2,
+        "weight": 20,
+        "conditions": {
+            "y": {
+                "min": {
+                    "absolute": -60
+                },
+                "max": {
+                    "absolute": 127
+                }
+            }
+        },
+        "multipliers": {
+            "structures": {
+                "minecraft:village_plains": 2,
+                "minecraft:mineshaft": 0
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "id": "rpgmobs:topic_creeper",
+    "name": "Creeper",
+    "question": "What do you know about creepers?",
+    "dialogue_ids": [
+        "rpgmobs:dialogue_mob_creeper_polite",
+        "rpgmobs:dialogue_mob_creeper_rude"
+    ]
+}

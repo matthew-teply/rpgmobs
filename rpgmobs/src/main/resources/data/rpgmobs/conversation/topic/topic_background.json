@@ -1,0 +1,8 @@
+{
+    "id": "rpgmobs:topic_background",
+    "name": "Background",
+    "question": "What do you do?",
+    "dialogue_ids": [
+        "rpgmobs:dialogue_common_background"
+    ]
+}

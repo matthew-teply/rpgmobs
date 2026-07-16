@@ -1,9 +1,0 @@
-{
-    "id": "rpgmobs:common_greeting_polite",
-    "question": "Greetings, my name is {player_name}, what is your name?",
-    "content": "Hello {player_name}, my name is {entity_name}!",
-    "unlocked_topic_ids": [],
-    "traits": [
-        "rpgmobs:trait_attitude_polite"
-    ]
-}

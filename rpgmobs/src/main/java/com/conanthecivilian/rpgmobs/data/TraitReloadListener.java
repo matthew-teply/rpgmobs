@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.data;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.trait.custom.TraitEntity;
+import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -16,11 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 public class TraitReloadListener extends SimpleJsonResourceReloadListener {
-    protected final Codec<TraitEntity> codec;
+    protected final Codec<Trait> codec;
     protected final String templateLocation;
 
     public TraitReloadListener(
-        Codec<TraitEntity> codec,
+        Codec<Trait> codec,
         String templateLocation
     ) {
         super(new Gson(), templateLocation);

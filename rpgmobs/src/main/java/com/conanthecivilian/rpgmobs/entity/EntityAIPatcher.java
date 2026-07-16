@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.entity;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.manager.FactionManager.IHumanFaction;
+import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import com.conanthecivilian.rpgmobs.manager.FactionManager.IMonsterFaction;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -31,7 +31,7 @@ public class EntityAIPatcher {
                 10,
                 true,
                 false,
-                entity -> entity instanceof IHumanFaction
+                entity -> entity instanceof AbstractNPC<?>
             ));
         }
 

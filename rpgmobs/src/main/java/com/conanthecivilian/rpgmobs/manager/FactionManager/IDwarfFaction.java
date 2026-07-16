@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.manager.FactionManager;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.npc.custom.dwarf.AbstractDwarfEntity;
+import com.conanthecivilian.rpgmobs.entity.npc.dwarf.AbstractDwarf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
@@ -24,7 +24,7 @@ public interface IDwarfFaction {
     }
 
     static boolean checkDwarfSpawnRules(
-        EntityType<? extends AbstractDwarfEntity<?>> entity,
+        EntityType<? extends AbstractDwarf<?>> entity,
         LevelAccessor level,
         MobSpawnType spawnType,
         BlockPos pos,

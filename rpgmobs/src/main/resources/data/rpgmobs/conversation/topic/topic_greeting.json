@@ -1,0 +1,9 @@
+{
+    "id": "rpgmobs:topic_greeting",
+    "name": "Greeting",
+    "question": "Greetings.",
+    "dialogue_ids": [
+        "rpgmobs:dialogue_common_greeting_polite",
+        "rpgmobs:dialogue_common_greeting_rude"
+    ]
+}
