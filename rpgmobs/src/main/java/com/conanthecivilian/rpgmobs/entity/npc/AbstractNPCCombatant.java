@@ -53,11 +53,11 @@ public abstract class AbstractNPCCombatant<T extends AbstractNPCCombatant<T>> ex
 
         idleTasks.getBehaviours().addFirst(
             new TargetOrRetaliate<>()
-                .attackablePredicate(entity -> this.factionManager.isEnemyFaction(entity) || entity.getLastHurtMob() == this)
-                .isAllyIf((mob, entity) -> this.factionManager.isAllyFaction(entity))
+                .attackablePredicate(livingEntity -> this.factionManager.isEnemyFaction(livingEntity) || livingEntity.getLastHurtMob() == this)
+                .isAllyIf((mob, livingEntity) -> this.factionManager.isAllyFaction(livingEntity))
                 .alertAlliesWhen((mob, entity) ->
-                    entity instanceof LivingEntity livingTarget && (
-                        this.factionManager.isEnemyFaction(livingTarget) || livingTarget.getLastHurtMob() == this
+                    entity instanceof LivingEntity livingEntity && (
+                        this.factionManager.isEnemyFaction(livingEntity) || livingEntity.getLastHurtMob() == this
                     )
                 )
         );

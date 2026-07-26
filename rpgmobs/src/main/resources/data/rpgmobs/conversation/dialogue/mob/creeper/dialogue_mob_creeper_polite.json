@@ -3,6 +3,6 @@
     "content": "Never heard of it, {player_name}, sorry...",
     "unlocked_topic_ids": [],
     "traits": [
-        "rpgmobs:trait_attitude_polite"
+        "rpgmobs:trait_polite"
     ]
 }

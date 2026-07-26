@@ -1,107 +1,114 @@
 package com.conanthecivilian.rpgmobs.manager.FactionManager;
 
-import com.conanthecivilian.rpgmobs.RPGMobs;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Creeper;
+import com.conanthecivilian.rpgmobs.entity.faction.Faction;
+import com.conanthecivilian.rpgmobs.entity.faction.FactionDiplomacy;
+import com.conanthecivilian.rpgmobs.entity.faction.FactionLoreData;
+import com.conanthecivilian.rpgmobs.entity.faction.template.FactionTemplate;
+import com.conanthecivilian.rpgmobs.entity.trait.Trait;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitManager;
+import com.conanthecivilian.rpgmobs.repository.FactionRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitRepository;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class FactionManager {
-    private static final String NBT_KEY_ENEMY_FACTIONS = "FactionEnemies";
-    private static final String NBT_KEY_ALLY_FACTIONS = "FactionAllies";
+    private static final int DIPLOMACY_THRESHOLD_ALLY = 20;
+    private static final int DIPLOMACY_THRESHOLD_ENEMY = -20;
 
-    protected ArrayList<Class<?>> enemyFactions = new ArrayList<>();
-    protected ArrayList<Class<?>> allyFactions = new ArrayList<>();
+    public final FactionRepository factionRepository;
 
-    public void addEnemyFaction(Class<?> enemyClass) {
-        enemyFactions.add(enemyClass);
-        this.onEnemyFactionsChanged();
+    public FactionManager(FactionRepository factionRepository) {
+        this.factionRepository = factionRepository;
     }
 
-    public void addEnemyFactions(ArrayList<Class<?>> enemyList) {
-        enemyFactions.addAll(enemyList);
-        this.onEnemyFactionsChanged();
-    }
-
-    public void addAllyFaction(Class<?> allyClass) {
-        allyFactions.add(allyClass);
-    }
-
-    public void addAllyFactions(ArrayList<Class<?>> allyList) {
-        allyFactions.addAll(allyList);
-    }
-
-    public void onEnemyFactionsChanged() {
-    }
-
-    public boolean isEnemyFaction(LivingEntity entity) {
-        if (entity == null || entity instanceof Creeper) return false;
-
-        return enemyFactions.stream().anyMatch(enemyClass -> enemyClass.isAssignableFrom(entity.getClass()));
-    }
-
-    public boolean isAllyFaction(LivingEntity entity) {
-        if (entity == null) return false;
-
-        return allyFactions.stream().anyMatch(allyClass -> allyClass.isAssignableFrom(entity.getClass()));
-    }
-
-    public ArrayList<Class<?>> getEnemyFactions() {
-        return enemyFactions;
-    }
-
-    public ArrayList<Class<?>> getAllyFactions() {
-        return allyFactions;
-    }
-
-    public void saveFactionList(
-        CompoundTag nbt,
-        String nbtKey,
-        ArrayList<Class<?>> factionList
+    public Faction createFaction(
+        FactionTemplate template,
+        int yearCreated
     ) {
-        ListTag enemiesListTag = new ListTag();
+        RandomSource random = RandomSource.create();
 
-        for (Class<?> faction : factionList) {
-            enemiesListTag.add(StringTag.valueOf(faction.getName()));
+        List<Trait> templateTraits = new ArrayList<>();
+
+        for (ResourceLocation traitId : template.getTraitPool()) {
+            templateTraits.add(TraitRepository.get(traitId));
         }
 
-        nbt.put(nbtKey, enemiesListTag);
+        UUID factionId = UUID.randomUUID();
+
+        List<Trait> factionTraits = TraitManager.getRandomTraits(random, templateTraits, 3);
+
+        Faction faction = new Faction(
+            factionId,
+            template.getId(),
+            template.getRandomName(),
+            template.getRandomColor(),
+            factionTraits,
+            new FactionLoreData(yearCreated),
+            createFactionDiplomacy(factionId, factionTraits)
+        );
+
+        this.factionRepository.set(faction);
+
+        return faction;
     }
 
-    public void loadFactionList(
-        CompoundTag nbt,
-        String nbtKey,
-        ArrayList<Class<?>> factionList
+    public void destroyFaction(
+        Faction faction,
+        int yearDestroyed
     ) {
-        if (nbt.contains(nbtKey, Tag.TAG_LIST)) {
-            ListTag factionsListTag = nbt.getList(nbtKey, Tag.TAG_STRING);
+        this.factionRepository.setInactive(faction);
 
-            for (int i = 0; i < factionsListTag.size(); i++) {
-                String factionClassName = factionsListTag.getString(i);
+        faction.setLoreData(new FactionLoreData(
+            faction.getLoreData().yearFounded(),
+            Optional.of(yearDestroyed)
+        ));
+    }
 
-                try {
-                    factionList.add(Class.forName(factionClassName));
-                } catch (ClassNotFoundException e) {
-                    RPGMobs.LOGGER.error("Could not load faction {}", factionClassName);
+    private FactionDiplomacy createFactionDiplomacy(UUID factionId, List<Trait> traits) {
+        List<UUID> activeFactionIds = this.factionRepository.getActiveFactions();
+
+        if (traits.isEmpty()) {
+            return new FactionDiplomacy(List.of(), activeFactionIds, List.of());
+        }
+
+        List<UUID> allies = new ArrayList<>();
+        List<UUID> neutral = new ArrayList<>();
+        List<UUID> enemies = new ArrayList<>();
+
+        for (UUID activeFactionId : activeFactionIds) {
+            Faction activeFaction = this.factionRepository.getFaction(activeFactionId);
+
+            int factionScore = 0;
+            int activeFactionScore = 0;
+
+            for (Trait factionTrait : traits) {
+                for (Trait activeFactionTrait : activeFaction.getTraits()) {
+                    factionScore += TraitManager.getTraitDispositionScore(factionTrait, activeFactionTrait);
+                    activeFactionScore += TraitManager.getTraitDispositionScore(activeFactionTrait, activeFactionTrait);
                 }
             }
+
+            if (factionScore >= DIPLOMACY_THRESHOLD_ALLY || activeFactionScore >= DIPLOMACY_THRESHOLD_ALLY) {
+                allies.add(activeFactionId);
+                activeFaction.getDiplomacy().allies().add(factionId);
+                continue;
+            }
+
+            if (factionScore <= DIPLOMACY_THRESHOLD_ENEMY || activeFactionScore <= DIPLOMACY_THRESHOLD_ENEMY) {
+                enemies.add(activeFactionId);
+                activeFaction.getDiplomacy().enemies().add(factionId);
+                continue;
+            }
+
+            neutral.add(activeFactionId);
+            activeFaction.getDiplomacy().neutral().add(factionId);
         }
-    }
 
-    public void saveFactions(CompoundTag nbt) {
-        this.saveFactionList(nbt, NBT_KEY_ENEMY_FACTIONS, enemyFactions);
-        this.saveFactionList(nbt, NBT_KEY_ALLY_FACTIONS, allyFactions);
-    }
-
-    public void loadFactions(CompoundTag nbt) {
-        enemyFactions.clear();
-        this.loadFactionList(nbt, NBT_KEY_ENEMY_FACTIONS, enemyFactions);
-
-        allyFactions.clear();
-        this.loadFactionList(nbt, NBT_KEY_ALLY_FACTIONS, allyFactions);
+        return new FactionDiplomacy(allies, neutral, enemies);
     }
 }

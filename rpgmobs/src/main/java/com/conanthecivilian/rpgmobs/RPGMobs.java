@@ -1,9 +1,13 @@
 package com.conanthecivilian.rpgmobs;
 
-import com.conanthecivilian.rpgmobs.entity.ModAttachments;
+import com.conanthecivilian.rpgmobs.data.ModAttachments;
 import com.conanthecivilian.rpgmobs.entity.npc.NPCRegistry;
 import com.conanthecivilian.rpgmobs.item.ModItems;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationManager;
+import com.conanthecivilian.rpgmobs.manager.FactionManager.FactionManager;
+import com.conanthecivilian.rpgmobs.manager.LoreManager.LoreManager;
+import com.conanthecivilian.rpgmobs.repository.FactionRepository;
+import com.conanthecivilian.rpgmobs.repository.LoreRepository;
 import com.conanthecivilian.rpgmobs.screen.ModMenuTypes;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
@@ -58,7 +62,19 @@ public class RPGMobs {
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
+        FactionRepository factionRepository = FactionRepository.get(event.getServer());
+        LoreRepository loreRepository = LoreRepository.get(event.getServer());
+
+        FactionManager factionManager = new FactionManager(factionRepository);
+
+        LoreManager loreManager = new LoreManager(
+            loreRepository,
+            factionManager
+        );
+
+        loreManager.generateInitialLore(
+            1000,
+            event.getServer().overworld().getSeed()
+        );
     }
 }

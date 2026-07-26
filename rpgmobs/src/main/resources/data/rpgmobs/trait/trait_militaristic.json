@@ -1,0 +1,12 @@
+{
+    "id": "rpgmobs:trait_militaristic",
+    "label": "Militaristic",
+    "weight": 20,
+    "category": "doctrine",
+    "conflicts": [
+        "rpgmobs:trait_peaceful"
+    ],
+    "scope": [
+        "faction"
+    ]
+}

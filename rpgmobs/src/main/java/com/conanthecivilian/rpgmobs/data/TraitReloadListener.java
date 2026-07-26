@@ -44,7 +44,7 @@ public class TraitReloadListener extends SimpleJsonResourceReloadListener {
             this.codec.parse(JsonOps.INSTANCE, jsonElement)
                 .resultOrPartial(error -> RPGMobs.LOGGER.error("Failed to parse template {}: {}", location, error))
                 .ifPresent(id -> {
-                    TraitRepository.setTrait(id);
+                    TraitRepository.set(id);
                 });
         });
 

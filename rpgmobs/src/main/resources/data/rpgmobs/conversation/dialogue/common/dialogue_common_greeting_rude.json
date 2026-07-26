@@ -3,6 +3,6 @@
     "content": "What do you want?",
     "unlocked_topic_ids": [],
     "traits": [
-        "rpgmobs:trait_attitude_rude"
+        "rpgmobs:trait_rude"
     ]
 }

@@ -5,9 +5,12 @@
         "rpgmobs:textures/npc/human/guardhonor.png",
         "rpgmobs:textures/npc/human/guardimperial.png"
     ],
-    "names": {
-        "first": {
-            "male": [
+    "gender_pool": [
+        "male"
+    ],
+    "name_pool": {
+        "male": {
+            "first_names": [
                 "Aldric",
                 "Anders",
                 "Alistair",
@@ -58,11 +61,10 @@
                 "Victor",
                 "Vespin",
                 "Wilton"
-            ],
-            "female": []
+            ]
         },
-        "last": {
-            "common": [
+        "common": {
+            "last_names": [
                 "Ashwood",
                 "Blackwood",
                 "Hawthorn",

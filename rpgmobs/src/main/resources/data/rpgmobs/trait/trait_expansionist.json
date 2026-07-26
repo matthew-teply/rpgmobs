@@ -1,0 +1,17 @@
+{
+    "id": "rpgmobs:trait_expansionist",
+    "label": "Expansionist",
+    "weight": 20,
+    "category": "motivation",
+    "conflicts": [],
+    "scope": [
+        "faction"
+    ],
+    "disposition": {
+        "same": 10,
+        "conflicting": -40,
+        "overrides": {
+            "rpgmobs:trait_peaceful": -60
+        }
+    }
+}

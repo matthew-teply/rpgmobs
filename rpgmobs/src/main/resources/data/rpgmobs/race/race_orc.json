@@ -3,9 +3,12 @@
     "textures": [
         "rpgmobs:textures/npc/orc/orc.png"
     ],
-    "names": {
-        "first": {
-            "male": [
+    "gender_pool": [
+        "male"
+    ],
+    "name_pool": {
+        "male": {
+            "first_names": [
                 "Azrog",
                 "Bajok",
                 "Brog",
@@ -56,8 +59,7 @@
                 "Zog",
                 "Zornak",
                 "Zulthar"
-            ],
-            "female": []
+            ]
         }
     }
 }

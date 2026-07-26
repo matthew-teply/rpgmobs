@@ -1,0 +1,16 @@
+{
+    "id": "rpgmobs:trait_brutal",
+    "label": "Brutal",
+    "weight": 20,
+    "category": "morality",
+    "conflicts": [
+        "rpgmobs:trait_noble"
+    ],
+    "scope": [
+        "faction"
+    ],
+    "disposition": {
+        "same": 10,
+        "conflicting": -40
+    }
+}

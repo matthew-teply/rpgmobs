@@ -14,6 +14,7 @@ import java.util.Optional;
 
 public class NPCData {
     private Optional<String> name;
+    private Optional<String> gender;
     private ResourceLocation race;
     private Optional<ResourceLocation> texture;
     private Map<String, Float> attributes;
@@ -21,12 +22,14 @@ public class NPCData {
 
     public NPCData(
         Optional<String> name,
+        Optional<String> gender,
         ResourceLocation race,
         Optional<ResourceLocation> texture,
         Map<String, Float> attributes,
         Optional<Map<EquipmentSlot, ResourceLocation>> equipment
     ) {
         this.name = name;
+        this.gender = gender;
         this.race = race;
         this.texture = texture;
         this.attributes = attributes;
@@ -36,6 +39,7 @@ public class NPCData {
     public NPCData(NPCData data) {
         this(
             data.name,
+            data.gender,
             data.race,
             data.texture,
             data.attributes,
@@ -48,6 +52,7 @@ public class NPCData {
 
     public static final Codec<NPCData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.optionalFieldOf("name").forGetter(NPCData::getName),
+            Codec.STRING.optionalFieldOf("gender").forGetter(NPCData::getGender),
             ResourceLocation.CODEC.fieldOf("race").forGetter(NPCData::getRace),
             ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(NPCData::getTexture),
             Codec.unboundedMap(Codec.STRING, Codec.FLOAT).fieldOf("attributes").forGetter(NPCData::getAttributes),
@@ -64,6 +69,14 @@ public class NPCData {
 
     public void setName(Optional<String> name) {
         this.name = name;
+    }
+
+    public Optional<String> getGender() {
+        return gender;
+    }
+
+    public void setGender(Optional<String> gender) {
+        this.gender = gender;
     }
 
     public ResourceLocation getRace() {

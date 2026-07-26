@@ -4,7 +4,7 @@ import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.npc.AbstractNPC;
 import com.conanthecivilian.rpgmobs.entity.trait.ITraitHolder;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.IConversationHydrator;
-import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitScope;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
 import com.conanthecivilian.rpgmobs.repository.TraitDatabaseRepository;
 import com.mojang.serialization.Codec;
@@ -175,7 +175,7 @@ public class ConversationDialogue implements ITraitHolder {
     @Override
     public void registerTraits() {
         if (!this.traits.isEmpty()) {
-            TraitDatabaseRepository.setAll(this.traits, TraitType.DIALOGUE, this.id);
+            TraitDatabaseRepository.setAll(this.traits, TraitScope.DIALOGUE, this.id);
         }
     }
 

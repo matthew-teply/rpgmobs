@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.command;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
-import com.conanthecivilian.rpgmobs.entity.ModAttachments;
+import com.conanthecivilian.rpgmobs.data.ModAttachments;
 import com.conanthecivilian.rpgmobs.entity.conversation.AttachedConversationTopics;
 import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAccessor;
 import com.mojang.brigadier.CommandDispatcher;

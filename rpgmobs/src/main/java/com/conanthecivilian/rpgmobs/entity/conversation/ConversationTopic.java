@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.entity.conversation;
 
 import com.conanthecivilian.rpgmobs.entity.trait.ITraitHolder;
-import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitScope;
 import com.conanthecivilian.rpgmobs.repository.TraitDatabaseRepository;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -76,7 +76,7 @@ public class ConversationTopic implements ITraitHolder {
     @Override
     public void registerTraits() {
         if (!this.traits.isEmpty()) {
-            TraitDatabaseRepository.setAll(this.traits, TraitType.TOPIC, this.id);
+            TraitDatabaseRepository.setAll(this.traits, TraitScope.TOPIC, this.id);
         }
     }
 

@@ -1,7 +1,7 @@
 package com.conanthecivilian.rpgmobs.repository;
 
 import com.conanthecivilian.rpgmobs.entity.trait.Trait;
-import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitScope;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,13 +15,13 @@ public class TraitRepository {
 
     public static final HashMap<ResourceLocation, Trait> TRAITS = new HashMap<>();
 
-    // Type -> Category -> ResourceLocation[]
+    // Scope (NPC) -> Category (Attitude) -> ResourceLocation[]
     public static final HashMap<String, HashMap<String, List<ResourceLocation>>> TRAIT_LOOKUP = new HashMap<>();
 
-    public static void setTrait(Trait trait) {
-        trait.type().forEach(traitType ->
+    public static void set(Trait trait) {
+        trait.scope().forEach(traitScope ->
             TRAIT_LOOKUP
-                .computeIfAbsent(traitType, k -> new HashMap<>())
+                .computeIfAbsent(traitScope.getSerializedName(), k -> new HashMap<>())
                 .computeIfAbsent(trait.category(), k -> new ArrayList<>())
                 .add(trait.id())
         );
@@ -29,23 +29,27 @@ public class TraitRepository {
         TRAITS.put(trait.id(), trait);
     }
 
-    public static @Nullable Trait getTrait(ResourceLocation id) {
+    public static @Nullable Trait get(ResourceLocation id) {
         return TRAITS.get(id);
     }
 
-    public static @NotNull List<Trait> getTraits(TraitType type, String category) {
-        List<ResourceLocation> traitIds = TRAIT_LOOKUP
-            .computeIfAbsent(type.id, k -> new HashMap<>())
-            .computeIfAbsent(category, k -> new ArrayList<>());
-
-        return traitIds.stream().map(TraitRepository::getTrait).toList();
-    }
-
-    public static @NotNull List<Trait> getTraits(List<ResourceLocation> traitIds) {
+    public static @Nullable List<Trait> get(List<ResourceLocation> traitIds) {
         List<Trait> traits = new ArrayList<>();
 
-        traitIds.forEach(traitId -> traits.add(getTrait(traitId)));
+        traitIds.forEach(traitId -> traits.add(get(traitId)));
+
+        if (traits.isEmpty()) {
+            return null;
+        }
 
         return traits;
+    }
+
+    public static @NotNull List<Trait> getByScopeAndCategory(TraitScope type, String category) {
+        List<ResourceLocation> traitIds = TRAIT_LOOKUP
+            .computeIfAbsent(type.name, k -> new HashMap<>())
+            .computeIfAbsent(category, k -> new ArrayList<>());
+
+        return traitIds.stream().map(TraitRepository::get).toList();
     }
 }

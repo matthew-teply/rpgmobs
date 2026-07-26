@@ -1,6 +1,6 @@
 package com.conanthecivilian.rpgmobs.mixin.PlayerMixin;
 
-import com.conanthecivilian.rpgmobs.entity.ModAttachments;
+import com.conanthecivilian.rpgmobs.data.ModAttachments;
 import com.conanthecivilian.rpgmobs.entity.conversation.AttachedConversationTopics;
 import com.conanthecivilian.rpgmobs.entity.conversation.ConversationTopic;
 import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAccessor;

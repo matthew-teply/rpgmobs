@@ -1,0 +1,12 @@
+{
+    "id": "rpgmobs:trait_noble",
+    "label": "Noble",
+    "weight": 20,
+    "category": "morality",
+    "conflicts": [
+        "rpgmobs:trait_brutal"
+    ],
+    "scope": [
+        "faction"
+    ]
+}

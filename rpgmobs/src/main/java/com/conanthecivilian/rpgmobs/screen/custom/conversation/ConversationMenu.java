@@ -37,7 +37,7 @@ public class ConversationMenu extends ModularUIContainerMenu {
     }
 
     /**
-     * Builds a client-side menu type, determines how to get the entity on client-side
+     * Builds a client-side menu scope, determines how to get the entity on client-side
      */
     public static MenuType<ModularUIContainerMenu> getMenuType() {
         return IMenuTypeExtension.create((windowId, inventory, data) -> {

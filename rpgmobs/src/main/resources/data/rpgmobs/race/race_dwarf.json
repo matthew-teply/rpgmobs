@@ -3,9 +3,12 @@
     "textures": [
         "rpgmobs:textures/npc/dwarf/dwarf.png"
     ],
-    "names": {
-        "first": {
-            "male": [
+    "gender_pool": [
+        "male"
+    ],
+    "name_pool": {
+        "male": {
+            "first_names": [
                 "Adrik",
                 "Alberich",
                 "Baern",
@@ -58,8 +61,8 @@
                 "Vondal"
             ]
         },
-        "last": {
-            "common": [
+        "common": {
+            "last_names": [
                 "Anvilborn",
                 "Brawnanvil",
                 "Trueanvil",

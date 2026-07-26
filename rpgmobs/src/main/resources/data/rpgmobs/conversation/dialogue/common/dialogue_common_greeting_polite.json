@@ -4,6 +4,6 @@
     "content": "Hello {player_name}, my name is {npc_name}!",
     "unlocked_topic_ids": [],
     "traits": [
-        "rpgmobs:trait_attitude_polite"
+        "rpgmobs:trait_polite"
     ]
 }

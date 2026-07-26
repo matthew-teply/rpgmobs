@@ -1,6 +1,6 @@
 package com.conanthecivilian.rpgmobs.repository;
 
-import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitType;
+import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitScope;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -9,21 +9,21 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TraitDatabaseRepository {
-    private static final HashMap<ResourceLocation, HashMap<TraitType, ArrayList<?>>> TRAITS_DATABASE = new HashMap<>();
+    private static final HashMap<ResourceLocation, HashMap<TraitScope, ArrayList<?>>> TRAITS_DATABASE = new HashMap<>();
 
-    public static HashMap<ResourceLocation, HashMap<TraitType, ArrayList<?>>> getAll() {
+    public static HashMap<ResourceLocation, HashMap<TraitScope, ArrayList<?>>> getAll() {
         return TRAITS_DATABASE;
     }
 
-    public static <T> @Nullable List<T> get(ResourceLocation trait, TraitType traitType) {
-        HashMap<TraitType, ArrayList<?>> innerMap = TRAITS_DATABASE.get(trait);
+    public static <T> @Nullable List<T> get(ResourceLocation trait, TraitScope traitScope) {
+        HashMap<TraitScope, ArrayList<?>> innerMap = TRAITS_DATABASE.get(trait);
 
-        return innerMap != null ? (List<T>) innerMap.get(traitType) : null;
+        return innerMap != null ? (List<T>) innerMap.get(traitScope) : null;
     }
 
-    public static <T> void set(ResourceLocation trait, TraitType traitType, T id) {
-        HashMap<TraitType, ArrayList<?>> innerMap = TRAITS_DATABASE.computeIfAbsent(trait, k -> new HashMap<>());
-        ArrayList<?> rawList = innerMap.computeIfAbsent(traitType, k -> new ArrayList<T>());
+    public static <T> void set(ResourceLocation trait, TraitScope traitScope, T id) {
+        HashMap<TraitScope, ArrayList<?>> innerMap = TRAITS_DATABASE.computeIfAbsent(trait, k -> new HashMap<>());
+        ArrayList<?> rawList = innerMap.computeIfAbsent(traitScope, k -> new ArrayList<T>());
 
         ArrayList<T> typedList = (ArrayList<T>) rawList;
 
@@ -32,9 +32,9 @@ public class TraitDatabaseRepository {
         }
     }
 
-    public static <T> void setAll(List<ResourceLocation> traits, TraitType traitType, T id) {
+    public static <T> void setAll(List<ResourceLocation> traits, TraitScope traitScope, T id) {
         for (ResourceLocation trait : traits) {
-            set(trait, traitType, id);
+            set(trait, traitScope, id);
         }
     }
 }
