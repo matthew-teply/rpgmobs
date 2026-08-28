@@ -7,11 +7,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,31 +26,27 @@ public class FactionRepository extends SavedData {
 
     public HashMap<UUID, Faction> FACTIONS = new HashMap<>();
 
-    public List<UUID> ACTIVE_FACTIONS = new ArrayList<>();
-    public List<UUID> INACTIVE_FACTIONS = new ArrayList<>();
+    private final List<UUID> LOOKUP_ACTIVE_FACTIONS = new ArrayList<>();
+    private final List<UUID> LOOKUP_INACTIVE_FACTIONS = new ArrayList<>();
 
     public void set(Faction faction) {
         this.FACTIONS.put(faction.getUUID(), faction);
 
-        if (faction.isActive()) {
-            this.ACTIVE_FACTIONS.add(faction.getUUID());
-        } else {
-            this.INACTIVE_FACTIONS.add(faction.getUUID());
-        }
+        this.setLookupTables(faction);
 
         this.setDirty();
     }
 
     public void setActive(Faction faction) {
-        this.INACTIVE_FACTIONS.remove(faction.getUUID());
-        this.ACTIVE_FACTIONS.add(faction.getUUID());
+        this.LOOKUP_INACTIVE_FACTIONS.remove(faction.getUUID());
+        this.LOOKUP_ACTIVE_FACTIONS.add(faction.getUUID());
 
         this.setDirty();
     }
 
     public void setInactive(Faction faction) {
-        this.ACTIVE_FACTIONS.remove(faction.getUUID());
-        this.INACTIVE_FACTIONS.add(faction.getUUID());
+        this.LOOKUP_ACTIVE_FACTIONS.remove(faction.getUUID());
+        this.LOOKUP_INACTIVE_FACTIONS.add(faction.getUUID());
 
         this.setDirty();
     }
@@ -62,23 +60,34 @@ public class FactionRepository extends SavedData {
     }
 
     public List<UUID> getActiveFactions() {
-        return this.ACTIVE_FACTIONS;
+        return this.LOOKUP_ACTIVE_FACTIONS;
     }
 
     public List<UUID> getInactiveFactions() {
-        return this.INACTIVE_FACTIONS;
+        return this.LOOKUP_INACTIVE_FACTIONS;
     }
 
     public void remove(UUID id) {
         this.FACTIONS.remove(id);
+
+        this.LOOKUP_ACTIVE_FACTIONS.remove(id);
+        this.LOOKUP_INACTIVE_FACTIONS.remove(id);
 
         this.setDirty();
     }
 
     public void clear() {
         this.FACTIONS.clear();
-        this.ACTIVE_FACTIONS.clear();
-        this.INACTIVE_FACTIONS.clear();
+        this.LOOKUP_ACTIVE_FACTIONS.clear();
+        this.LOOKUP_INACTIVE_FACTIONS.clear();
+    }
+
+    public void setLookupTables(Faction faction) {
+        if (faction.isActive()) {
+            this.LOOKUP_ACTIVE_FACTIONS.add(faction.getUUID());
+        } else {
+            this.LOOKUP_INACTIVE_FACTIONS.add(faction.getUUID());
+        }
     }
 
     public Faction getRandomFaction(RandomSource random) {
@@ -90,12 +99,35 @@ public class FactionRepository extends SavedData {
     }
 
     public Faction getRandomActiveFaction(RandomSource random) {
-        UUID factionId = this.ACTIVE_FACTIONS
+        UUID factionId = this.LOOKUP_ACTIVE_FACTIONS
             .stream()
             .toList()
-            .get(random.nextInt(this.ACTIVE_FACTIONS.size()));
+            .get(random.nextInt(this.LOOKUP_ACTIVE_FACTIONS.size()));
 
         return this.getFaction(factionId);
+    }
+
+    public @Nullable Faction getRandomActiveFactionByRace(RandomSource random, ResourceLocation raceId) {
+        List<UUID> raceFactions = new ArrayList<>();
+
+        for (UUID factionID : this.LOOKUP_ACTIVE_FACTIONS) {
+            Faction faction = this.getFaction(factionID);
+
+            if (faction.getRaces().contains(raceId)) {
+                raceFactions.add(faction.getUUID());
+            }
+        }
+
+        if (!raceFactions.isEmpty()) {
+            UUID factionId = raceFactions
+                .stream()
+                .toList()
+                .get(random.nextInt(raceFactions.size()));
+
+            return this.getFaction(factionId);
+        }
+
+        return null;
     }
 
     @Override
@@ -122,6 +154,8 @@ public class FactionRepository extends SavedData {
     public static FactionRepository load(CompoundTag compoundTag, HolderLookup.Provider provider) {
         FactionRepository factionRepository = new FactionRepository();
 
+        factionRepository.clear();
+
         AtomicInteger factionsLoaded = new AtomicInteger();
 
         if (compoundTag.contains(DATA_KEY, Tag.TAG_LIST)) {
@@ -135,8 +169,8 @@ public class FactionRepository extends SavedData {
                     .resultOrPartial(err -> RPGMobs.LOGGER.error("Failed to load faction {}: {}", uuid, err))
                     .ifPresent(faction -> {
                         factionRepository.set(faction);
-                        factionsLoaded.getAndIncrement();
 
+                        factionsLoaded.getAndIncrement();
                         RPGMobs.LOGGER.info("[FactionSavedData] Successfully loaded Faction {}", uuid);
                     });
             }

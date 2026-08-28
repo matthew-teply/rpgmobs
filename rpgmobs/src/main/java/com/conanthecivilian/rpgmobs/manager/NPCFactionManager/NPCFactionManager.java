@@ -39,12 +39,17 @@ public class NPCFactionManager {
         MinecraftServer server = getServer();
         if (server == null) return;
 
-        Faction faction = this.factionRepository.getRandomActiveFaction(RandomSource.create());
-
-        this.npc.setData(
-            ModAttachments.NPC_FACTION_ID,
-            faction.getUUID()
+        Faction faction = this.factionRepository.getRandomActiveFactionByRace(
+            RandomSource.create(),
+            this.npc.getNPCData().getRace()
         );
+
+        if (faction != null) {
+            this.npc.setData(
+                ModAttachments.NPC_FACTION_ID,
+                faction.getUUID()
+            );
+        }
     }
 
     public void setNPCFaction(Faction faction) {

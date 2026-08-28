@@ -43,9 +43,7 @@ public class TraitReloadListener extends SimpleJsonResourceReloadListener {
             // Convert raw JSON elements into your clean Java Record via Codec
             this.codec.parse(JsonOps.INSTANCE, jsonElement)
                 .resultOrPartial(error -> RPGMobs.LOGGER.error("Failed to parse template {}: {}", location, error))
-                .ifPresent(id -> {
-                    TraitRepository.set(id);
-                });
+                .ifPresent(TraitRepository::set);
         });
 
         RPGMobs.LOGGER.info("Loaded {} event templates successfully from {}.", TraitRepository.TRAITS.size(), this.templateLocation);

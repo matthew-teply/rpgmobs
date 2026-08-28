@@ -1,7 +1,6 @@
 {
     "id": "rpgmobs:trait_rude",
     "label": "Rude",
-    "weight": 20,
     "category": "attitude",
     "conflicts": [
         "rpgmobs:trait_polite"

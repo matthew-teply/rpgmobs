@@ -2,8 +2,11 @@ package com.conanthecivilian.rpgmobs.command;
 
 import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.faction.Faction;
+import com.conanthecivilian.rpgmobs.entity.faction.template.FactionTemplate;
 import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.conanthecivilian.rpgmobs.repository.FactionRepository;
+import com.conanthecivilian.rpgmobs.repository.FactionTemplateRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.ChatFormatting;
@@ -11,6 +14,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -82,12 +86,13 @@ public class FactionCommand {
             index++;
 
             Faction faction = factionRepository.getFaction(factionId);
+            FactionTemplate factionTemplate = FactionTemplateRepository.get(faction.getTemplateId());
 
             int finalIndex = index;
             source.sendSuccess(
                 () ->
                     Component
-                        .literal(finalIndex + ". " + faction.getName() + " (" + faction.getUUID() + ")")
+                        .literal(finalIndex + ". " + faction.getName() + " - " + factionTemplate.getLabel() + " (" + faction.getUUID() + ")")
                         .withColor(faction.getColor())
                 , false
             );
@@ -130,7 +135,13 @@ public class FactionCommand {
 
         StringBuilder traitsString = new StringBuilder();
 
-        for (Trait trait : faction.getTraits()) {
+        for (ResourceLocation traitId : faction.getTraits()) {
+            Trait trait = TraitRepository.get(traitId);
+
+            if (trait == null) {
+                continue;
+            }
+
             if (traitsString.isEmpty()) {
                 traitsString.append(trait.label());
             } else {
@@ -139,11 +150,26 @@ public class FactionCommand {
             }
         }
 
+        StringBuilder racesString = new StringBuilder();
+
+        for (ResourceLocation raceId : faction.getRaces()) {
+            if (racesString.isEmpty()) {
+                racesString.append(raceId);
+            } else {
+                racesString.append(", ");
+                racesString.append(raceId);
+            }
+        }
+
+        FactionTemplate factionTemplate = FactionTemplateRepository.get(faction.getTemplateId());
+
         source.sendSuccess(() -> Component.literal(""), false);
         source.sendSuccess(() -> Component.literal("Name: " + faction.getName()), false);
+        source.sendSuccess(() -> Component.literal("Label: " + factionTemplate.getLabel()), false);
         source.sendSuccess(() -> Component.literal("Color: " + faction.getColor()), false);
 
         source.sendSuccess(() -> Component.literal("Traits: " + traitsString), false);
+        source.sendSuccess(() -> Component.literal("Races: " + racesString), false);
 
         source.sendSuccess(() -> Component.literal("Lore data: " + faction.getLoreData()), false);
         source.sendSuccess(() -> Component.literal("Template ID: " + faction.getTemplateId()), false);
@@ -176,8 +202,11 @@ public class FactionCommand {
         FactionRepository factionRepository = FactionRepository.get(source.getServer());
 
         Faction faction = factionRepository.getFaction(factionId);
+        FactionTemplate factionTemplate = FactionTemplateRepository.get(faction.getTemplateId());
 
-        MutableComponent factionLog = Component.literal(faction.getName());
+        MutableComponent factionLog = Component
+            .literal(faction.getName() + " - " + factionTemplate.getLabel())
+            .withColor(faction.getColor());
 
         if (faction.getLoreData().yearDestroyed().isPresent()) {
             factionLog

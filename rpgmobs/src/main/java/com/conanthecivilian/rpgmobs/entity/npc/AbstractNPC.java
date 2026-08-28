@@ -8,15 +8,15 @@ import com.conanthecivilian.rpgmobs.entity.conversation.IConversationTopicsAcces
 import com.conanthecivilian.rpgmobs.entity.npc.data.NPCData;
 import com.conanthecivilian.rpgmobs.entity.npc.data.NPCRace;
 import com.conanthecivilian.rpgmobs.entity.npc.template.NPCTemplate;
-import com.conanthecivilian.rpgmobs.entity.trait.AttachedTraits;
 import com.conanthecivilian.rpgmobs.entity.trait.ITraitHolder;
-import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.ConversationDenialReason;
 import com.conanthecivilian.rpgmobs.manager.NPCFactionManager.NPCFactionManager;
 import com.conanthecivilian.rpgmobs.manager.NPCSpawnManager.NPCSpawnManager;
-import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitManager;
 import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitScope;
-import com.conanthecivilian.rpgmobs.repository.*;
+import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
+import com.conanthecivilian.rpgmobs.repository.NPCRaceRepository;
+import com.conanthecivilian.rpgmobs.repository.NPCTemplateRepository;
+import com.conanthecivilian.rpgmobs.repository.TraitDatabaseRepository;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationMenu;
 import com.conanthecivilian.rpgmobs.screen.custom.conversation.ConversationUI;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
@@ -120,7 +120,8 @@ public abstract class AbstractNPC<T extends AbstractNPC<T>> extends PathfinderMo
             ResourceLocation.parse("rpgmobs:topic_background"),
             ResourceLocation.parse("rpgmobs:topic_chat"),
             ResourceLocation.parse("rpgmobs:topic_nearby_enemies"),
-            ResourceLocation.parse("rpgmobs:topic_creeper")
+            ResourceLocation.parse("rpgmobs:topic_creeper"),
+            ResourceLocation.parse("rpgmobs:topic_faction")
         );
     }
 
@@ -382,6 +383,14 @@ public abstract class AbstractNPC<T extends AbstractNPC<T>> extends PathfinderMo
             ));
         }
 
+        if (npcData.getTraits().isEmpty()) {
+            npcData.setTraits(Optional.of(
+                this.createNPCTraitsList(npcTemplate)
+            ));
+
+            this.registerTraits();
+        }
+
         this.setData(
             ModAttachments.NPC_DATA.get(),
             npcData
@@ -405,8 +414,14 @@ public abstract class AbstractNPC<T extends AbstractNPC<T>> extends PathfinderMo
 
     @Override
     public void registerTraits() {
+        Optional<List<ResourceLocation>> traitIds = this.getData(ModAttachments.NPC_DATA).getTraits();
+
+        if (traitIds == null || traitIds.isEmpty()) {
+            return;
+        }
+
         TraitDatabaseRepository.setAll(
-            this.getData(ModAttachments.NPC_TRAITS).traitIds(),
+            traitIds.get(),
             TraitScope.NPC,
             this.getUUID()
         );
@@ -414,32 +429,19 @@ public abstract class AbstractNPC<T extends AbstractNPC<T>> extends PathfinderMo
 
     @Override
     public List<ResourceLocation> getTraits() {
-        return this.getData(ModAttachments.NPC_TRAITS).traitIds();
+        return this.getData(ModAttachments.NPC_DATA).getTraits().orElse(List.of());
     }
 
-    public void setNPCTraits() {
-        RandomSource random = RandomSource.create();
-
+    public List<ResourceLocation> createNPCTraitsList(NPCTemplate npcTemplate) {
         List<ResourceLocation> traitIds = new ArrayList<>();
-        String[] categories = {"attitude"};
 
-        for (String category : categories) {
-            Trait trait = TraitManager.determineRandomTraitByWeight(
-                random,
-                TraitRepository.getByScopeAndCategory(TraitScope.NPC, category)
-            );
-
-            if (trait != null) {
-                traitIds.add(trait.id());
-            }
-
-            random.nextInt();
+        if (npcTemplate.traits().isPresent()) {
+            npcTemplate.traits().get().values().forEach(traitPool -> {
+                traitIds.addAll(traitPool.getWeightedValues(this.random));
+            });
         }
 
-        this.setData(
-            ModAttachments.NPC_TRAITS.get(),
-            new AttachedTraits(traitIds)
-        );
+        return traitIds;
     }
 
     @Override
@@ -482,15 +484,17 @@ public abstract class AbstractNPC<T extends AbstractNPC<T>> extends PathfinderMo
 
         this.setNPCTemplate(npcTemplate);
         this.setNPCData(npcTemplate);
-        this.setNPCTraits();
 
         this.factionManager.setNPCFaction();
 
-        this.setCustomName(
-            Component
-                .literal(this.getData(ModAttachments.NPC_DATA.get()).getName().orElse("Undefined"))
-                .withColor(this.factionManager.getNPCFaction().getColor())
-        );
+        MutableComponent npcName = Component
+            .literal(this.getData(ModAttachments.NPC_DATA.get()).getName().orElse("Undefined"));
+
+        if (this.factionManager.getNPCFaction() != null) {
+            npcName.withColor(this.factionManager.getNPCFaction().getColor());
+        }
+
+        this.setCustomName(npcName);
 
         this.populateDefaultEquipmentSlots(random, difficulty);
         return spawnGroupData;

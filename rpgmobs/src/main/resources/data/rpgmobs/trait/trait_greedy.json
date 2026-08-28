@@ -1,7 +1,6 @@
 {
     "id": "rpgmobs:trait_greedy",
     "label": "Greedy",
-    "weight": 20,
     "category": "motivation",
     "conflicts": [
         "rpgmobs:trait_honorable"

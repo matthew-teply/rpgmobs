@@ -1,0 +1,14 @@
+{
+    "id": "rpgmobs:faction_event_type_split_civil_war",
+    "name": "Civil war",
+    "description": [
+        "{faction_name} was split as a result of a bloody civil war between rivaling brothers.",
+        "A peasant revolt split {faction_name} into multiple nations."
+    ],
+    "modifiers": {
+        "faction.new.range": {
+            "min": 2,
+            "max": 6
+        }
+    }
+}

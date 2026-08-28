@@ -2,17 +2,23 @@ package com.conanthecivilian.rpgmobs.manager.TraitManager;
 
 import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.conanthecivilian.rpgmobs.entity.trait.TraitDisposition;
+import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class TraitManager {
 
-    public static boolean areTraitsConflicting(Trait trait1, Trait trait2) {
+    public static boolean areTraitsConflicting(ResourceLocation trait1Id, ResourceLocation trait2Id) {
+        Trait trait1 = TraitRepository.get(trait1Id);
+        Trait trait2 = TraitRepository.get(trait2Id);
+
+        if (trait1 == null || trait2 == null) {
+            return false;
+        }
+
         return trait1.conflicts().contains(trait2.id())
             || trait2.conflicts().contains(trait1.id());
     }
@@ -35,85 +41,17 @@ public class TraitManager {
         return false;
     }
 
-    public static List<Trait> getRandomTraits(
-        RandomSource random,
-        List<Trait> traits,
-        int numTraits
-    ) {
-        if (!isTraitListConflicting(traits) && traits.size() <= numTraits) {
-            return traits;
-        }
-
-        List<Trait> selectedTraits = new ArrayList<>();
-
-        Trait randomTrait = determineRandomTraitByWeight(random, traits);
-
-        selectedTraits.add(randomTrait);
-        traits.remove(randomTrait);
-
-        traits.removeIf(trait -> {
-            assert randomTrait != null;
-            return areTraitsConflicting(randomTrait, trait);
-        });
-
-        return getRandomTraits(random, traits, numTraits, selectedTraits);
-    }
-
-    public static List<Trait> getRandomTraits(
-        RandomSource random,
-        List<Trait> traits,
-        int numTraits,
-        List<Trait> selectedTraits
-    ) {
-        if (numTraits == selectedTraits.size() || traits.isEmpty()) {
-            return selectedTraits;
-        }
-
-        Trait randomTrait = determineRandomTraitByWeight(random, traits);
-
-        selectedTraits.add(randomTrait);
-        traits.remove(randomTrait);
-
-        traits.removeIf(trait -> {
-            assert randomTrait != null;
-            return areTraitsConflicting(randomTrait, trait);
-        });
-
-        return getRandomTraits(random, traits, numTraits, selectedTraits);
-    }
-
-    public static @Nullable Trait determineRandomTraitByWeight(RandomSource random, List<Trait> traits) {
-        if (traits.isEmpty()) {
-            return null;
-        }
-
-        int weightPool = traits
-            .stream()
-            .map(Trait::weight)
-            .reduce(0, Integer::sum);
-
-        if (weightPool <= 0) {
-            return null;
-        }
-
-        int randomRoll = random.nextInt(weightPool);
-        int weightPoolSubtotal = 0;
-
-        for (Trait trait : traits) {
-            weightPoolSubtotal += trait.weight();
-
-            if (weightPoolSubtotal > randomRoll) {
-                return trait;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Get the disposition score of trait1 towards trait2
      */
-    public static int getTraitDispositionScore(Trait trait1, Trait trait2) {
+    public static int getTraitDispositionScore(ResourceLocation trait1Id, ResourceLocation trait2Id) {
+        Trait trait1 = TraitRepository.get(trait1Id);
+        Trait trait2 = TraitRepository.get(trait2Id);
+
+        if (trait1 == null || trait2 == null) {
+            return 0;
+        }
+
         if (trait1.disposition().isEmpty()) {
             return 0;
         }
@@ -126,7 +64,7 @@ public class TraitManager {
             dispositionScore += traitDisposition.same();
         }
 
-        if (areTraitsConflicting(trait1, trait2)) {
+        if (areTraitsConflicting(trait1.id(), trait2.id())) {
             dispositionScore += traitDisposition.conflicting();
         }
 

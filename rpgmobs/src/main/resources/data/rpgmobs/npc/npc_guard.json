@@ -14,6 +14,16 @@
             "follow_range": 32.0
         }
     },
+    "traits": {
+        "attitude": {
+            "min": 1,
+            "max": 1,
+            "values": {
+                "rpgmobs:trait_polite": 1,
+                "rpgmobs:trait_rude": 1
+            }
+        }
+    },
     "spawn": {
         "base_chance": 0.2,
         "weight": 20,

@@ -1,7 +1,6 @@
 {
     "id": "rpgmobs:trait_mercantile",
     "label": "Mercantile",
-    "weight": 20,
     "category": "doctrine",
     "conflicts": [],
     "scope": [

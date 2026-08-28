@@ -9,16 +9,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class NPCData {
-    private Optional<String> name;
-    private Optional<String> gender;
-    private ResourceLocation race;
-    private Optional<ResourceLocation> texture;
-    private Map<String, Float> attributes;
-    private Optional<Map<EquipmentSlot, ResourceLocation>> equipment;
+    public Optional<String> name;
+    public Optional<String> gender;
+    public ResourceLocation race;
+    public Optional<ResourceLocation> texture;
+    public Map<String, Float> attributes;
+    public Optional<Map<EquipmentSlot, ResourceLocation>> equipment;
+    public Optional<List<ResourceLocation>> traits;
 
     public NPCData(
         Optional<String> name,
@@ -26,7 +28,8 @@ public class NPCData {
         ResourceLocation race,
         Optional<ResourceLocation> texture,
         Map<String, Float> attributes,
-        Optional<Map<EquipmentSlot, ResourceLocation>> equipment
+        Optional<Map<EquipmentSlot, ResourceLocation>> equipment,
+        Optional<List<ResourceLocation>> traits
     ) {
         this.name = name;
         this.gender = gender;
@@ -34,6 +37,7 @@ public class NPCData {
         this.texture = texture;
         this.attributes = attributes;
         this.equipment = equipment;
+        this.traits = traits;
     }
 
     public NPCData(NPCData data) {
@@ -43,7 +47,8 @@ public class NPCData {
             data.race,
             data.texture,
             data.attributes,
-            data.equipment
+            data.equipment,
+            data.traits
         );
     }
 
@@ -56,7 +61,8 @@ public class NPCData {
             ResourceLocation.CODEC.fieldOf("race").forGetter(NPCData::getRace),
             ResourceLocation.CODEC.optionalFieldOf("texture").forGetter(NPCData::getTexture),
             Codec.unboundedMap(Codec.STRING, Codec.FLOAT).fieldOf("attributes").forGetter(NPCData::getAttributes),
-            Codec.unboundedMap(EquipmentSlot.CODEC, ResourceLocation.CODEC).optionalFieldOf("equipment").forGetter(NPCData::getEquipment)
+            Codec.unboundedMap(EquipmentSlot.CODEC, ResourceLocation.CODEC).optionalFieldOf("equipment").forGetter(NPCData::getEquipment),
+            ResourceLocation.CODEC.listOf().optionalFieldOf("traits").forGetter(NPCData::getTraits)
         ).apply(instance, NPCData::new)
     );
 
@@ -109,5 +115,13 @@ public class NPCData {
 
     public void setEquipment(Optional<Map<EquipmentSlot, ResourceLocation>> equipment) {
         this.equipment = equipment;
+    }
+
+    public Optional<List<ResourceLocation>> getTraits() {
+        return traits;
+    }
+
+    public void setTraits(Optional<List<ResourceLocation>> traits) {
+        this.traits = traits;
     }
 }

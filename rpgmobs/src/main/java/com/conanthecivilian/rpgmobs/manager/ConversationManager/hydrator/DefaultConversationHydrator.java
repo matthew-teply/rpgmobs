@@ -41,6 +41,8 @@ public class DefaultConversationHydrator implements IConversationHydrator {
             case "npc_name" ->
                 npc.getCustomName() != null ? npc.getCustomName().getString() : npc.getName().getString();
             case "npc_background" -> npc.getNPCTemplate().label();
+            case "npc_faction" ->
+                npc.factionManager.getNPCFaction() != null ? npc.factionManager.getNPCFaction().getName() : "Unaffiliated";
             default -> "{" + token + "}";
         };
     }

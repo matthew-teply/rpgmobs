@@ -4,6 +4,7 @@ import com.conanthecivilian.rpgmobs.RPGMobs;
 import com.conanthecivilian.rpgmobs.entity.conversation.ConversationDialogue;
 import com.conanthecivilian.rpgmobs.entity.trait.ITraitHolder;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.DefaultConversationHydrator;
+import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.NPCFactionConversationHydrator;
 import com.conanthecivilian.rpgmobs.manager.ConversationManager.hydrator.NearbyEnemiesConversationHydrator;
 import com.conanthecivilian.rpgmobs.repository.ConversationHydratorRepository;
 import com.conanthecivilian.rpgmobs.repository.ConversationRepository;
@@ -20,6 +21,7 @@ public class ConversationManager {
     public static void registerHydrators() {
         ConversationHydratorRepository.set(new DefaultConversationHydrator());
         ConversationHydratorRepository.set(new NearbyEnemiesConversationHydrator());
+        ConversationHydratorRepository.set(new NPCFactionConversationHydrator());
     }
 
     public static @Nullable ConversationDialogue determineDialogueByTraits(

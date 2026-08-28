@@ -1,5 +1,6 @@
 package com.conanthecivilian.rpgmobs.entity.faction.template;
 
+import com.conanthecivilian.rpgmobs.entity.trait.TraitPool;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
@@ -9,29 +10,37 @@ import java.util.List;
 
 public class FactionTemplate {
     private ResourceLocation id;
-    private List<ResourceLocation> traitPool;
+    private String label;
+    private TraitPool traitPool;
     private List<Integer> colorPool;
+    private FactionTemplateRaceData raceData;
     private FactionTemplateNamePool namePool;
     private FactionTemplateLoreData factionTemplateLoreData;
 
     public FactionTemplate(
         ResourceLocation id,
-        List<ResourceLocation> traitPool,
+        String label,
+        TraitPool traitPool,
         List<Integer> colorPool,
+        FactionTemplateRaceData raceData,
         FactionTemplateNamePool namePool,
         FactionTemplateLoreData factionTemplateLoreData
     ) {
         this.id = id;
+        this.label = label;
         this.traitPool = traitPool;
         this.colorPool = colorPool;
+        this.raceData = raceData;
         this.namePool = namePool;
         this.factionTemplateLoreData = factionTemplateLoreData;
     }
 
     public static final Codec<FactionTemplate> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         ResourceLocation.CODEC.fieldOf("id").forGetter(FactionTemplate::getId),
-        ResourceLocation.CODEC.listOf().fieldOf("trait_pool").forGetter(FactionTemplate::getTraitPool),
+        Codec.STRING.fieldOf("label").forGetter(FactionTemplate::getLabel),
+        TraitPool.CODEC.fieldOf("traits").forGetter(FactionTemplate::getTraitPool),
         Codec.INT.listOf().fieldOf("color_pool").forGetter(FactionTemplate::getColorPool),
+        FactionTemplateRaceData.CODEC.fieldOf("race_data").forGetter(FactionTemplate::getRaceData),
         FactionTemplateNamePool.CODEC.fieldOf("name_pool").forGetter(FactionTemplate::getNamePool),
         FactionTemplateLoreData.CODEC.fieldOf("lore_data").forGetter(FactionTemplate::getFactionLoreData)
     ).apply(instance, FactionTemplate::new));
@@ -62,11 +71,11 @@ public class FactionTemplate {
         this.id = id;
     }
 
-    public List<ResourceLocation> getTraitPool() {
+    public TraitPool getTraitPool() {
         return traitPool;
     }
 
-    public void setTraitPool(List<ResourceLocation> traitPool) {
+    public void setTraitPool(TraitPool traitPool) {
         this.traitPool = traitPool;
     }
 
@@ -92,5 +101,21 @@ public class FactionTemplate {
 
     public void setFactionLoreData(FactionTemplateLoreData factionTemplateLoreData) {
         this.factionTemplateLoreData = factionTemplateLoreData;
+    }
+
+    public FactionTemplateRaceData getRaceData() {
+        return raceData;
+    }
+
+    public void setRaceData(FactionTemplateRaceData raceData) {
+        this.raceData = raceData;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 }

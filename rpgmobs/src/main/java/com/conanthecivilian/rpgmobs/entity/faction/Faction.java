@@ -1,6 +1,5 @@
 package com.conanthecivilian.rpgmobs.entity.faction;
 
-import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
@@ -14,7 +13,8 @@ public class Faction {
     private ResourceLocation templateId;
     private String name;
     private int color;
-    private List<Trait> traits;
+    private List<ResourceLocation> traits;
+    private List<ResourceLocation> races;
     private FactionLoreData loreData;
     private FactionDiplomacy diplomacy;
 
@@ -23,7 +23,8 @@ public class Faction {
         ResourceLocation templateId,
         String name,
         int color,
-        List<Trait> traits,
+        List<ResourceLocation> traits,
+        List<ResourceLocation> races,
         FactionLoreData loreData,
         FactionDiplomacy diplomacy
     ) {
@@ -32,6 +33,7 @@ public class Faction {
         this.name = name;
         this.color = color;
         this.traits = traits;
+        this.races = races;
         this.loreData = loreData;
         this.diplomacy = diplomacy;
     }
@@ -41,7 +43,8 @@ public class Faction {
         ResourceLocation.CODEC.fieldOf("template_id").forGetter(Faction::getTemplateId),
         Codec.STRING.fieldOf("name").forGetter(Faction::getName),
         Codec.INT.fieldOf("color").forGetter(Faction::getColor),
-        Trait.CODEC.listOf().fieldOf("traits").forGetter(Faction::getTraits),
+        ResourceLocation.CODEC.listOf().fieldOf("traits").forGetter(Faction::getTraits),
+        ResourceLocation.CODEC.listOf().fieldOf("races").forGetter(Faction::getRaces),
         FactionLoreData.CODEC.fieldOf("lore_data").forGetter(Faction::getLoreData),
         FactionDiplomacy.CODEC.fieldOf("diplomacy").forGetter(Faction::getDiplomacy)
     ).apply(instance, Faction::new));
@@ -70,11 +73,11 @@ public class Faction {
         this.color = color;
     }
 
-    public List<Trait> getTraits() {
+    public List<ResourceLocation> getTraits() {
         return traits;
     }
 
-    public void setTraits(List<Trait> traits) {
+    public void setTraits(List<ResourceLocation> traits) {
         this.traits = traits;
     }
 
@@ -104,5 +107,13 @@ public class Faction {
 
     public boolean isActive() {
         return this.loreData.yearDestroyed().isEmpty();
+    }
+
+    public List<ResourceLocation> getRaces() {
+        return races;
+    }
+
+    public void setRaces(List<ResourceLocation> races) {
+        this.races = races;
     }
 }

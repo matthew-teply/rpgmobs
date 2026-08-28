@@ -60,8 +60,6 @@ public class ConversationDialogue implements ITraitHolder {
         this.hydrators = hydrators;
         this.fallback = fallback;
         this.template = template;
-
-        this.registerTraits();
     }
 
     public void callback(IConversationTopicsAccessor conversationTopicsAccessor) {

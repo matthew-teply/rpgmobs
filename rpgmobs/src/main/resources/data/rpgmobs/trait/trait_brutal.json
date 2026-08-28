@@ -1,7 +1,6 @@
 {
     "id": "rpgmobs:trait_brutal",
     "label": "Brutal",
-    "weight": 20,
     "category": "morality",
     "conflicts": [
         "rpgmobs:trait_noble"

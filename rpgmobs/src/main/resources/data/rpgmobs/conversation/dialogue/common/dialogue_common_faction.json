@@ -1,0 +1,9 @@
+{
+    "id": "rpgmobs:dialogue_common_faction",
+    "content": "Im a part of {npc_faction} we are {npc_faction_traits} people.",
+    "hydrators": [
+        "rpgmobs:conversation_hydrator_npc_faction"
+    ],
+    "unlocked_topic_ids": [],
+    "traits": []
+}

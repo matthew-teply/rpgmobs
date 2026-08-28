@@ -18,6 +18,7 @@ public abstract class PlayerMixin implements IConversationTopicsAccessor {
         return List.of(
             ResourceLocation.parse("rpgmobs:topic_background"),
             ResourceLocation.parse("rpgmobs:topic_chat"),
+            ResourceLocation.parse("rpgmobs:topic_faction"),
             ResourceLocation.parse("rpgmobs:topic_nearby_enemies")
             //ResourceLocation.parse("faction")
         );

@@ -1,15 +1,14 @@
 {
-    "id": "rpgmobs:faction_kingdom",
-    "trait_pool": [
-        "rpgmobs:trait_noble",
-        "rpgmobs:trait_brutal",
-        "rpgmobs:trait_militaristic",
-        "rpgmobs:trait_peaceful",
-        "rpgmobs:trait_mercantile",
-        "rpgmobs:trait_honorable",
-        "rpgmobs:trait_greedy",
-        "rpgmobs:trait_expansionist"
-    ],
+    "id": "rpgmobs:faction_clan_orc",
+    "label": "Orc clan",
+    "traits": {
+        "max": 3,
+        "values": {
+            "rpgmobs:trait_brutal": 1,
+            "rpgmobs:trait_militaristic": 1,
+            "rpgmobs:trait_expansionist": 1
+        }
+    },
     "color_pool": [
         16766720,
         14381056,
@@ -37,6 +36,13 @@
         1976635,
         11184810
     ],
+    "race_data": {
+        "race_pool": [
+            "rpgmobs:race_orc"
+        ],
+        "min": 1,
+        "max": 2
+    },
     "name_pool": {
         "prefixes": [
             "Solar",

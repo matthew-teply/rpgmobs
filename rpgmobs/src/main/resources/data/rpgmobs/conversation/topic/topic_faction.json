@@ -1,0 +1,8 @@
+{
+    "id": "rpgmobs:topic_faction",
+    "name": "Faction",
+    "question": "What faction are you a part of?",
+    "dialogue_ids": [
+        "rpgmobs:dialogue_common_faction"
+    ]
+}

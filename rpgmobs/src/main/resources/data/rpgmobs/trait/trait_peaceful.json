@@ -1,10 +1,10 @@
 {
     "id": "rpgmobs:trait_peaceful",
     "label": "Peaceful",
-    "weight": 20,
     "category": "doctrine",
     "conflicts": [
-        "rpgmobs:trait_militaristic"
+        "rpgmobs:trait_militaristic",
+        "rpgmobs:trait_expansionist"
     ],
     "scope": [
         "faction"

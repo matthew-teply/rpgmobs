@@ -4,10 +4,8 @@ import com.conanthecivilian.rpgmobs.entity.faction.Faction;
 import com.conanthecivilian.rpgmobs.entity.faction.FactionDiplomacy;
 import com.conanthecivilian.rpgmobs.entity.faction.FactionLoreData;
 import com.conanthecivilian.rpgmobs.entity.faction.template.FactionTemplate;
-import com.conanthecivilian.rpgmobs.entity.trait.Trait;
 import com.conanthecivilian.rpgmobs.manager.TraitManager.TraitManager;
 import com.conanthecivilian.rpgmobs.repository.FactionRepository;
-import com.conanthecivilian.rpgmobs.repository.TraitRepository;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
@@ -22,25 +20,42 @@ public class FactionManager {
 
     public final FactionRepository factionRepository;
 
+    private final RandomSource random;
+
     public FactionManager(FactionRepository factionRepository) {
         this.factionRepository = factionRepository;
+        this.random = RandomSource.create();
     }
 
     public Faction createFaction(
         FactionTemplate template,
         int yearCreated
     ) {
-        RandomSource random = RandomSource.create();
-
-        List<Trait> templateTraits = new ArrayList<>();
-
-        for (ResourceLocation traitId : template.getTraitPool()) {
-            templateTraits.add(TraitRepository.get(traitId));
-        }
-
         UUID factionId = UUID.randomUUID();
 
-        List<Trait> factionTraits = TraitManager.getRandomTraits(random, templateTraits, 3);
+        List<ResourceLocation> factionTraits = template.getTraitPool().getWeightedValues(this.random);
+        List<ResourceLocation> factionRaces = new ArrayList<>();
+
+        List<ResourceLocation> racePool = new ArrayList<>(template.getRaceData().racePool());
+
+        Integer minRaces = template.getRaceData().min().orElse(1);
+        Optional<Integer> maxRaces = template.getRaceData().max();
+
+        if (maxRaces.orElse(1) == racePool.size()) {
+            ResourceLocation raceId = racePool.getFirst();
+            factionRaces.add(raceId);
+        } else {
+            int racesCount = maxRaces.orElse(1) > racePool.size() ? racePool.size() : maxRaces.orElse(1);
+
+            for (int i = 0; i < racesCount; i++) {
+                int randomIndex = this.random.nextInt(racePool.size());
+
+                ResourceLocation raceId = racePool.get(randomIndex);
+                factionRaces.add(raceId);
+
+                racePool.remove(randomIndex);
+            }
+        }
 
         Faction faction = new Faction(
             factionId,
@@ -48,6 +63,7 @@ public class FactionManager {
             template.getRandomName(),
             template.getRandomColor(),
             factionTraits,
+            factionRaces,
             new FactionLoreData(yearCreated),
             createFactionDiplomacy(factionId, factionTraits)
         );
@@ -69,7 +85,7 @@ public class FactionManager {
         ));
     }
 
-    private FactionDiplomacy createFactionDiplomacy(UUID factionId, List<Trait> traits) {
+    private FactionDiplomacy createFactionDiplomacy(UUID factionId, List<ResourceLocation> traits) {
         List<UUID> activeFactionIds = this.factionRepository.getActiveFactions();
 
         if (traits.isEmpty()) {
@@ -86,8 +102,8 @@ public class FactionManager {
             int factionScore = 0;
             int activeFactionScore = 0;
 
-            for (Trait factionTrait : traits) {
-                for (Trait activeFactionTrait : activeFaction.getTraits()) {
+            for (ResourceLocation factionTrait : traits) {
+                for (ResourceLocation activeFactionTrait : activeFaction.getTraits()) {
                     factionScore += TraitManager.getTraitDispositionScore(factionTrait, activeFactionTrait);
                     activeFactionScore += TraitManager.getTraitDispositionScore(activeFactionTrait, activeFactionTrait);
                 }
